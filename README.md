@@ -32,7 +32,7 @@ provenance-preserving dedup and an evaluated extraction step — not a CRUD app.
 - [x] **T2** — scheduled GitHub Actions ingest workflow (`.github/workflows/ingest.yml`)
 - [x] **T3** — `events` + `event_sources` schema with idempotent upsert (`supabase/migrations/0001_init.sql`)
 - [x] **T7** — 529 (cheerio) + Variety (AEG JSON feed) source adapters — **live**, cross-source dedup badge working (Josiah & the Bonnevilles merges TM + Variety)
-- [ ] T4 — dedup (exact key works; add fuzzy fallback + false-merge guard test)
+- [x] **T4** — dedup: exact key + fuzzy fallback (`src/lib/dedup.ts`) + false-merge guard test (`npm test`, 4/4 pass)
 - [ ] T5 — extraction-accuracy eval harness
 - [ ] T6 — liveness: never-empty render + TM-only degradation + freshness
 - [~] **T8** — LLM blurb (Haiku, generate-once) — code complete + integration-verified; **awaiting Anthropic API credits** to produce output
