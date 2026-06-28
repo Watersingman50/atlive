@@ -1,4 +1,5 @@
 name: ingest
+# registration nudge
 
 # T2: scheduled ingestion. Runs in CI (no Vercel serverless timeout wall).
 # Repo secrets required: TM_API_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY.
