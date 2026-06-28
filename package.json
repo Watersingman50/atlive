@@ -5,6 +5,9 @@
   "type": "module",
   "description": "Automated Atlanta live-event discovery — ingestion pipeline + (later) Next.js site.",
   "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
     "ingest": "tsx --env-file=.env.local src/ingest/run.ts",
     "ingest:dry": "tsx --env-file=.env.local src/ingest/run.ts --dry-run",
     "db:apply": "tsx --env-file=.env.local src/ingest/apply-migration.ts",
@@ -12,11 +15,16 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",
-    "pg": "^8.22.0"
+    "next": "^16.2.9",
+    "pg": "^8.22.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
     "@types/pg": "^8.20.0",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
     "tsx": "^4.19.0",
     "typescript": "^5.6.0"
   }
