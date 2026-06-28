@@ -18,14 +18,21 @@ const fmtDate = (s: string | null) =>
 const fmtTime = (s: string | null) =>
   s ? new Date(s).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : null;
 
+function relTime(iso: string): string {
+  const mins = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60_000));
+  if (mins < 2) return "just now";
+  if (mins < 60) return `${mins} min ago`;
+  const hrs = Math.round(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.round(hrs / 24)}d ago`;
+}
+
 export default function EventsBoard({
   events,
-  error,
-  fetchedAt,
+  lastIngest,
 }: {
   events: UpcomingEvent[];
-  error: string | null;
-  fetchedAt: string;
+  lastIngest: string | null;
 }) {
   const [dateFilter, setDateFilter] = useState<DateFilter>("all");
   const [venue, setVenue] = useState<string>("all");
@@ -68,6 +75,11 @@ export default function EventsBoard({
     [filtered],
   );
 
+  // Freshness: ingest runs every 6h; >9h since the last successful ingest means a
+  // scheduled run was missed — surface a banner so a stale live demo is honest.
+  const ageHours = lastIngest ? (Date.now() - new Date(lastIngest).getTime()) / 3_600_000 : null;
+  const stale = ageHours !== null && ageHours > 9;
+
   return (
     <main className="wrap">
       <header className="head">
@@ -78,16 +90,13 @@ export default function EventsBoard({
         <p className="stat" aria-live="polite">
           <strong>{filtered.length}</strong> {filtered.length === 1 ? "event" : "events"} from{" "}
           <strong>{sourceCount}</strong> {sourceCount === 1 ? "source" : "sources"}
-          <span className="fresh">
-            {" · updated "}
-            {new Date(fetchedAt).toLocaleString("en-US", {
-              month: "short",
-              day: "numeric",
-              hour: "numeric",
-              minute: "2-digit",
-            })}
-          </span>
+          {lastIngest && <span className="fresh"> · updated {relTime(lastIngest)}</span>}
         </p>
+        {stale && (
+          <div className="banner" role="status">
+            Heads up — the data feed hasn&apos;t refreshed in over 9 hours, so some events may be out of date.
+          </div>
+        )}
       </header>
 
       <div className="filters">
@@ -128,10 +137,10 @@ export default function EventsBoard({
         )}
       </div>
 
-      {error && events.length === 0 ? (
-        <div className="empty">Couldn&apos;t load events right now. Check back shortly.</div>
-      ) : filtered.length === 0 ? (
-        <div className="empty">No events match these filters.</div>
+      {filtered.length === 0 ? (
+        <div className="empty">
+          {events.length === 0 ? "No upcoming events right now — check back soon." : "No events match these filters."}
+        </div>
       ) : (
         <motion.div layout className="grid">
           <AnimatePresence mode="popLayout">

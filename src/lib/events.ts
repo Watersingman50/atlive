@@ -26,7 +26,8 @@ export interface UpcomingEvent {
 export interface UpcomingResult {
   events: UpcomingEvent[];
   error: string | null;
-  fetchedAt: string;
+  /** Most recent ingest time (max last_seen_at) — drives the freshness banner. */
+  lastIngest: string | null;
 }
 
 const isoDate = (d: Date) => d.toISOString().slice(0, 10);
@@ -34,10 +35,9 @@ const isoDate = (d: Date) => d.toISOString().slice(0, 10);
 export async function getUpcomingEvents(days = 14): Promise<UpcomingResult> {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const fetchedAt = new Date().toISOString();
 
   if (!url || !key) {
-    return { events: [], error: "Supabase env not configured", fetchedAt };
+    return { events: [], error: "Supabase env not configured", lastIngest: null };
   }
 
   const db = createClient(url, key, { auth: { persistSession: false } });
@@ -47,16 +47,22 @@ export async function getUpcomingEvents(days = 14): Promise<UpcomingResult> {
   const { data, error } = await db
     .from("events")
     .select(
-      "id,title,artist,venue_name,genre,event_date,starts_at,url,image_url,min_price,blurb,rank_score,event_sources(source)",
+      "id,title,artist,venue_name,genre,event_date,starts_at,url,image_url,min_price,blurb,rank_score,last_seen_at,event_sources(source)",
     )
     .gte("event_date", isoDate(today))
     .lte("event_date", isoDate(end))
     .order("rank_score", { ascending: false, nullsFirst: false })
     .order("event_date", { ascending: true });
 
+  const rows = (data as (UpcomingEvent & { last_seen_at?: string })[] | null) ?? [];
+  const lastIngest =
+    rows.length > 0
+      ? rows.reduce<string | null>((max, r) => (r.last_seen_at && (!max || r.last_seen_at > max) ? r.last_seen_at : max), null)
+      : null;
+
   return {
-    events: (data as UpcomingEvent[] | null) ?? [],
+    events: rows,
     error: error?.message ?? null,
-    fetchedAt,
+    lastIngest,
   };
 }
