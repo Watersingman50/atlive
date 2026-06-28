@@ -33,7 +33,8 @@ provenance-preserving dedup and an evaluated extraction step — not a CRUD app.
 - [x] **T3** — `events` + `event_sources` schema with idempotent upsert (`supabase/migrations/0001_init.sql`)
 - [x] **T7** — 529 (cheerio) + Variety (AEG JSON feed) source adapters — **live**, cross-source dedup badge working (Josiah & the Bonnevilles merges TM + Variety)
 - [x] **T4** — dedup: exact key + fuzzy fallback (`src/lib/dedup.ts`) + false-merge guard test (`npm test`, 4/4 pass)
-- [ ] T5 — extraction-accuracy eval harness
+- [x] **T5** — extraction-accuracy eval harness (`npm run eval`) — 96.7% vs hand-labeled ground truth; pure parsers factored out for testability
+- [x] **UI polish** — Vercel Analytics, live "X events from Y sources" stat, date/venue/genre filters, Framer Motion animations, redesigned cards/typography
 - [ ] T6 — liveness: never-empty render + TM-only degradation + freshness
 - [~] **T8** — LLM blurb (Haiku, generate-once) — code complete + integration-verified; **awaiting Anthropic API credits** to produce output
 - [x] **T9** — Next.js "this week" page (single join + ISR) — **deployed to Vercel (atlive.vercel.app)**
