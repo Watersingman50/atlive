@@ -3,6 +3,7 @@ import type { CanonicalEvent } from "../lib/types.js";
 import { ticketmasterAdapter } from "../lib/sources/ticketmaster.js";
 import { venue529Adapter } from "../lib/sources/venue529.js";
 import { varietyAdapter } from "../lib/sources/variety.js";
+import { aegAdapter } from "../lib/sources/aeg.js";
 import { getClient, upsertEvents, getEventsNeedingBlurbs, setBlurb, recordIngestRun } from "../lib/db.js";
 import { generateBlurb, blurbsEnabled } from "../lib/llm/blurb.js";
 
@@ -16,7 +17,12 @@ import { generateBlurb, blurbsEnabled } from "../lib/llm/blurb.js";
 // Stage A ships with [ticketmaster] only. Stage B appends the 529 + Variety
 // adapters to this list — no other change needed.
 
-const adapters: SourceAdapter[] = [ticketmasterAdapter(), venue529Adapter(), varietyAdapter()];
+const adapters: SourceAdapter[] = [
+  ticketmasterAdapter(),
+  venue529Adapter(),
+  varietyAdapter(),
+  aegAdapter({ name: "terminal-west", venueId: 211, venueName: "Terminal West" }),
+];
 
 async function main() {
   const dryRun = process.argv.includes("--dry-run");

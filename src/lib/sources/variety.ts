@@ -1,68 +1,14 @@
 import type { SourceAdapter } from "./adapter.js";
 import type { CanonicalEvent } from "../types.js";
+import { aegAdapter, parseAegFeed, type AegEvent } from "./aeg.js";
 
-// Variety Playhouse (AEG/AXS) — OVERLAP source: its shows are also in the
-// Ticketmaster API, so the same event arrives from two sources. That overlap
-// is what the dedup ("seen in N sources") demo needs. Data comes from AEG's
-// static per-venue JSON feed (venue id 214) — structured, no headless browser.
+// Variety Playhouse (AEG venue 214). Thin wrapper over the generic AEG adapter.
+// `parseVarietyFeed` is kept as a named export for the extraction eval fixtures.
 
-const FEED = "https://aegwebprod.blob.core.windows.net/json/events/214/events.json";
-const VENUE = "Variety Playhouse";
-
-interface AegEvent {
-  eventId: string | number;
-  active?: boolean;
-  eventDateTimeISO?: string;
-  eventDateTime?: string;
-  ticketPriceLow?: string;
-  title?: { headlinersText?: string; eventTitleText?: string };
-  ticketing?: { url?: string; eventUrl?: string };
-  media?: Record<string, { file_name?: string }>;
-}
-
-function parsePrice(s: string | undefined): number | null {
-  if (!s) return null;
-  const n = parseFloat(s.replace(/[^0-9.]/g, ""));
-  return Number.isFinite(n) && n > 0 ? n : null;
-}
-
-/** Pure parser over the AEG feed JSON — eval/test-able without the network. */
 export function parseVarietyFeed(data: { events?: AegEvent[] }): CanonicalEvent[] {
-  const events: CanonicalEvent[] = [];
-  for (const e of data.events ?? []) {
-        if (e.active === false) continue;
-        const iso = e.eventDateTimeISO ?? e.eventDateTime ?? null;
-        const headFull = (e.title?.headlinersText ?? e.title?.eventTitleText ?? "").trim();
-        if (!headFull) continue;
-        // strip a trailing tour name ("Artist - The X Tour") for a cleaner dedup key
-        const artist = (headFull.split(" - ")[0] ?? headFull).trim();
-        const firstMedia = e.media ? Object.values(e.media)[0] : undefined;
-
-        events.push({
-          sourceEventId: String(e.eventId),
-          source: "variety",
-          title: headFull,
-          artist,
-          venueName: VENUE,
-          genre: null,
-          eventDate: iso ? iso.slice(0, 10) : null,
-          startsAt: iso,
-          url: e.ticketing?.url ?? e.ticketing?.eventUrl ?? null,
-          imageUrl: firstMedia?.file_name ?? null,
-          minPrice: parsePrice(e.ticketPriceLow),
-          raw: { eventId: e.eventId, headFull },
-        });
-  }
-  return events;
+  return parseAegFeed(data, { source: "variety", venueName: "Variety Playhouse" });
 }
 
 export function varietyAdapter(): SourceAdapter {
-  return {
-    name: "variety",
-    async fetchEvents() {
-      const res = await fetch(FEED, { headers: { "user-agent": "Mozilla/5.0 ATLive" } });
-      if (!res.ok) throw new Error(`variety ${res.status}`);
-      return parseVarietyFeed((await res.json()) as { events?: AegEvent[] });
-    },
-  };
+  return aegAdapter({ name: "variety", venueId: 214, venueName: "Variety Playhouse" });
 }
