@@ -6,6 +6,8 @@ dedupes them, and publishes a "what's on this week" site + weekly digest.
 This repo is the engineering story: a scheduled multi-source ingestion pipeline with
 provenance-preserving dedup and an evaluated extraction step — not a CRUD app.
 
+**Live:** https://atlive.vercel.app
+
 ## Architecture
 
 ```
@@ -34,7 +36,7 @@ provenance-preserving dedup and an evaluated extraction step — not a CRUD app.
 - [ ] T6 — liveness: never-empty render + TM-only degradation + freshness
 - [ ] T7 — 529 + Variety scraper adapters
 - [ ] T8 — LLM blurb (Haiku, generate-once)
-- [ ] T9 — Next.js "this week" page (single join + ISR)
+- [x] **T9** — Next.js "this week" page (single join + ISR) — **deployed to Vercel (atlive.vercel.app)**
 - [ ] T10 — Resend weekly digest
 - [ ] T11 — README polish + eval results
 
