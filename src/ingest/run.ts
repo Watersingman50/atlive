@@ -1,5 +1,7 @@
 import type { SourceAdapter } from "../lib/sources/adapter.js";
 import { ticketmasterAdapter } from "../lib/sources/ticketmaster.js";
+import { venue529Adapter } from "../lib/sources/venue529.js";
+import { varietyAdapter } from "../lib/sources/variety.js";
 import { getClient, upsertEvents } from "../lib/db.js";
 
 // Ingest entrypoint. Runs on a schedule via GitHub Actions (T2).
@@ -12,7 +14,7 @@ import { getClient, upsertEvents } from "../lib/db.js";
 // Stage A ships with [ticketmaster] only. Stage B appends the 529 + Variety
 // adapters to this list — no other change needed.
 
-const adapters: SourceAdapter[] = [ticketmasterAdapter()];
+const adapters: SourceAdapter[] = [ticketmasterAdapter(), venue529Adapter(), varietyAdapter()];
 
 async function main() {
   const dryRun = process.argv.includes("--dry-run");
