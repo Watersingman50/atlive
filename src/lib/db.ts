@@ -1,5 +1,6 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { canonicalKey, type CanonicalEvent } from "./types.js";
+import { sameEvent } from "./dedup.js";
 
 // Idempotent two-step upsert (T3):
 //
@@ -17,7 +18,8 @@ export function getClient(): SupabaseClient | null {
 }
 
 export interface UpsertResult {
-  events: number;
+  created: number;
+  merged: number;
   sources: number;
 }
 
@@ -52,21 +54,61 @@ export async function setBlurb(db: SupabaseClient, id: string, blurb: string): P
   if (error) throw new Error(`setBlurb failed (${id}): ${error.message}`);
 }
 
+interface ExistingEvent {
+  id: string;
+  artist: string | null;
+  venueName: string | null;
+  eventDate: string | null;
+}
+
 export async function upsertEvents(
   db: SupabaseClient,
   events: CanonicalEvent[],
 ): Promise<UpsertResult> {
-  let eventCount = 0;
+  // Preload existing canonical events so we can match in memory: exact by
+  // canonical_key, then fuzzy (sameEvent) for cross-source name variants.
+  // The table is small at this scale; bound by date range for larger volumes.
+  const { data: existing, error: loadErr } = await db
+    .from("events")
+    .select("id,canonical_key,artist,venue_name,event_date");
+  if (loadErr) throw new Error(`preload events failed: ${loadErr.message}`);
+
+  const byKey = new Map<string, string>(); // canonical_key -> id
+  const byDate = new Map<string, ExistingEvent[]>(); // event_date -> candidates
+  for (const r of existing ?? []) {
+    byKey.set(r.canonical_key, r.id);
+    if (!r.event_date) continue;
+    const row: ExistingEvent = { id: r.id, artist: r.artist, venueName: r.venue_name, eventDate: r.event_date };
+    (byDate.get(r.event_date) ?? byDate.set(r.event_date, []).get(r.event_date)!).push(row);
+  }
+
+  let created = 0;
+  let merged = 0;
   let sourceCount = 0;
 
   for (const e of events) {
     const key = canonicalKey(e);
+    const now = new Date().toISOString();
+    let id = byKey.get(key); // 1. exact key
 
-    // 1. canonical event (merge: COALESCE keeps existing non-null on conflict)
-    const { data: ev, error: evErr } = await db
-      .from("events")
-      .upsert(
-        {
+    if (!id && e.eventDate) {
+      // 2. fuzzy fallback: a same-date event whose artist+venue are similar
+      const match = (byDate.get(e.eventDate) ?? []).find((c) =>
+        sameEvent({ artist: e.artist, venueName: e.venueName, eventDate: e.eventDate }, c),
+      );
+      if (match) {
+        id = match.id;
+        merged++;
+      }
+    }
+
+    if (id) {
+      await db.from("events").update({ last_seen_at: now }).eq("id", id);
+    } else {
+      // 3. new canonical event
+      const { data: ins, error: insErr } = await db
+        .from("events")
+        .insert({
           canonical_key: key,
           title: e.title,
           artist: e.artist,
@@ -76,24 +118,30 @@ export async function upsertEvents(
           url: e.url,
           image_url: e.imageUrl,
           min_price: e.minPrice,
-          last_seen_at: new Date().toISOString(),
-        },
-        { onConflict: "canonical_key" },
-      )
-      .select("id")
-      .single();
-    if (evErr) throw new Error(`events upsert failed (${key}): ${evErr.message}`);
-    eventCount++;
+          last_seen_at: now,
+        })
+        .select("id")
+        .single();
+      if (insErr) throw new Error(`events insert failed (${key}): ${insErr.message}`);
+      id = ins.id as string;
+      created++;
+      byKey.set(key, id);
+      if (e.eventDate) {
+        const row: ExistingEvent = { id, artist: e.artist, venueName: e.venueName, eventDate: e.eventDate };
+        (byDate.get(e.eventDate) ?? byDate.set(e.eventDate, []).get(e.eventDate)!).push(row);
+      }
+    }
 
-    // 2. provenance row
+    // provenance row (idempotent on source + source_event_id)
+    if (!id) throw new Error("unreachable: event id not resolved");
     const { error: srcErr } = await db.from("event_sources").upsert(
       {
-        event_id: ev.id,
+        event_id: id,
         source: e.source,
         source_event_id: e.sourceEventId,
         source_url: e.url,
         raw: e.raw,
-        seen_at: new Date().toISOString(),
+        seen_at: now,
       },
       { onConflict: "source,source_event_id" },
     );
@@ -101,5 +149,5 @@ export async function upsertEvents(
     sourceCount++;
   }
 
-  return { events: eventCount, sources: sourceCount };
+  return { created, merged, sources: sourceCount };
 }

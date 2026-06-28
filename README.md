@@ -35,7 +35,7 @@ provenance-preserving dedup and an evaluated extraction step — not a CRUD app.
 - [ ] T4 — dedup (exact key works; add fuzzy fallback + false-merge guard test)
 - [ ] T5 — extraction-accuracy eval harness
 - [ ] T6 — liveness: never-empty render + TM-only degradation + freshness
-- [ ] T8 — LLM blurb (Haiku, generate-once)
+- [~] **T8** — LLM blurb (Haiku, generate-once) — code complete + integration-verified; **awaiting Anthropic API credits** to produce output
 - [x] **T9** — Next.js "this week" page (single join + ISR) — **deployed to Vercel (atlive.vercel.app)**
 - [ ] T10 — Resend weekly digest
 - [ ] T11 — README polish + eval results

@@ -11,6 +11,7 @@
     "ingest": "tsx --env-file=.env.local src/ingest/run.ts",
     "ingest:dry": "tsx --env-file=.env.local src/ingest/run.ts --dry-run",
     "db:apply": "tsx --env-file=.env.local src/ingest/apply-migration.ts",
+    "test": "node --import tsx --test \"src/lib/**/*.test.ts\"",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

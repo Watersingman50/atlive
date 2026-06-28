@@ -48,7 +48,7 @@ async function main() {
     process.exit(1);
   }
   const res = await upsertEvents(db, collected);
-  console.log(`upserted: ${res.events} events, ${res.sources} source rows`);
+  console.log(`upserted: ${res.created} new, ${res.merged} merged (fuzzy), ${res.sources} source rows`);
 
   // T8: fill missing blurbs (generate-once, bounded). Best-effort — a blurb
   // failure never fails the ingest; the page falls back to the title.
