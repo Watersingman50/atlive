@@ -24,14 +24,10 @@ function monthIndex(name: string): number | null {
   return Number.isNaN(d.getTime()) ? null : d.getMonth();
 }
 
-export function venue529Adapter(): SourceAdapter {
-  return {
-    name: "529",
-    async fetchEvents() {
-      const res = await fetch(CAL_URL, { headers: { "user-agent": "Mozilla/5.0 ATLive" } });
-      if (!res.ok) throw new Error(`529 ${res.status}`);
-      const $ = cheerio.load(await res.text());
-      const events: CanonicalEvent[] = [];
+/** Pure parser over the 529 calendar HTML — eval/test-able without the network. */
+export function parse529Html(html: string): CanonicalEvent[] {
+  const $ = cheerio.load(html);
+  const events: CanonicalEvent[] = [];
 
       $(".calendar-desktop").each((_, block) => {
         const $block = $(block);
@@ -89,9 +85,18 @@ export function venue529Adapter(): SourceAdapter {
             });
           });
         });
-      });
+  });
 
-      return events;
+  return events;
+}
+
+export function venue529Adapter(): SourceAdapter {
+  return {
+    name: "529",
+    async fetchEvents() {
+      const res = await fetch(CAL_URL, { headers: { "user-agent": "Mozilla/5.0 ATLive" } });
+      if (!res.ok) throw new Error(`529 ${res.status}`);
+      return parse529Html(await res.text());
     },
   };
 }

@@ -26,16 +26,10 @@ function parsePrice(s: string | undefined): number | null {
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
-export function varietyAdapter(): SourceAdapter {
-  return {
-    name: "variety",
-    async fetchEvents() {
-      const res = await fetch(FEED, { headers: { "user-agent": "Mozilla/5.0 ATLive" } });
-      if (!res.ok) throw new Error(`variety ${res.status}`);
-      const data = (await res.json()) as { events?: AegEvent[] };
-      const events: CanonicalEvent[] = [];
-
-      for (const e of data.events ?? []) {
+/** Pure parser over the AEG feed JSON — eval/test-able without the network. */
+export function parseVarietyFeed(data: { events?: AegEvent[] }): CanonicalEvent[] {
+  const events: CanonicalEvent[] = [];
+  for (const e of data.events ?? []) {
         if (e.active === false) continue;
         const iso = e.eventDateTimeISO ?? e.eventDateTime ?? null;
         const headFull = (e.title?.headlinersText ?? e.title?.eventTitleText ?? "").trim();
@@ -58,8 +52,17 @@ export function varietyAdapter(): SourceAdapter {
           minPrice: parsePrice(e.ticketPriceLow),
           raw: { eventId: e.eventId, headFull },
         });
-      }
-      return events;
+  }
+  return events;
+}
+
+export function varietyAdapter(): SourceAdapter {
+  return {
+    name: "variety",
+    async fetchEvents() {
+      const res = await fetch(FEED, { headers: { "user-agent": "Mozilla/5.0 ATLive" } });
+      if (!res.ok) throw new Error(`variety ${res.status}`);
+      return parseVarietyFeed((await res.json()) as { events?: AegEvent[] });
     },
   };
 }

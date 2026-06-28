@@ -18,7 +18,7 @@ const MAX_PAGES = 9; // deep-paging cap: size*page < 1000
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-interface TMEvent {
+export interface TMEvent {
   id: string;
   name: string;
   url?: string;
@@ -32,7 +32,7 @@ interface TMEvent {
   };
 }
 
-function normalize(e: TMEvent): CanonicalEvent {
+export function normalizeTMEvent(e: TMEvent): CanonicalEvent {
   const venue = e._embedded?.venues?.[0]?.name ?? null;
   const artist = e._embedded?.attractions?.[0]?.name ?? null;
   const image =
@@ -109,7 +109,7 @@ export function ticketmasterAdapter(opts?: { days?: number }): SourceAdapter {
       for (let page = 0; page < Math.min(totalPages, MAX_PAGES); page++) {
         const { events, totalPages: tp } = await fetchPage(key, page, params);
         totalPages = tp;
-        all.push(...events.map(normalize));
+        all.push(...events.map(normalizeTMEvent));
         await sleep(250); // stay comfortably under 5 req/s
       }
       return all;
