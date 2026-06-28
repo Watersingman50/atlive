@@ -18,6 +18,11 @@ const fmtDate = (s: string | null) =>
 const fmtTime = (s: string | null) =>
   s ? new Date(s).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : null;
 
+// Source-provided URLs are untrusted — only allow http(s) so a malicious
+// "javascript:" URL can't become click-to-XSS when rendered into href/src.
+const safeUrl = (u: string | null): string | null =>
+  u && /^https?:\/\//i.test(u) ? u : null;
+
 function relTime(iso: string): string {
   const mins = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60_000));
   if (mins < 2) return "just now";
@@ -147,6 +152,8 @@ export default function EventsBoard({
             {filtered.map((e) => {
               const sources = [...new Set(e.event_sources.map((s) => s.source))];
               const time = fmtTime(e.starts_at);
+              const link = safeUrl(e.url);
+              const img = safeUrl(e.image_url);
               return (
                 <motion.article
                   key={e.id}
@@ -158,9 +165,9 @@ export default function EventsBoard({
                   whileHover={{ y: -4 }}
                   className="card"
                 >
-                  {e.image_url && (
+                  {img && (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={e.image_url} alt="" loading="lazy" className="card-img" />
+                    <img src={img} alt="" loading="lazy" className="card-img" />
                   )}
                   <div className="card-body">
                     <div className="card-date">
@@ -168,8 +175,8 @@ export default function EventsBoard({
                       {time ? ` · ${time}` : ""}
                     </div>
                     <h2 className="card-title">
-                      {e.url ? (
-                        <a href={e.url} target="_blank" rel="noopener noreferrer">
+                      {link ? (
+                        <a href={link} target="_blank" rel="noopener noreferrer">
                           {e.title}
                         </a>
                       ) : (
