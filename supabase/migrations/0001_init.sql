@@ -84,3 +84,35 @@ create trigger events_touch_updated_at
 -- roles get zero rows. Nothing reads this DB except trusted server-side code.
 alter table public.events enable row level security;
 alter table public.event_sources enable row level security;
+
+-- Ingest run history (powers the /pipeline status page). Each ingest writes one row.
+create table if not exists public.ingest_runs (
+  id          uuid primary key default gen_random_uuid(),
+  ran_at      timestamptz not null default now(),
+  status      text not null,                    -- 'success' | 'error'
+  sources     jsonb,                            -- {ticketmaster: 26, "529": 27, variety: 58}
+  created     int,                              -- new canonical events
+  merged      int,                              -- fuzzy cross-source merges
+  source_rows int,                              -- event_sources upserted
+  blurbs      int,                              -- LLM blurbs filled this run
+  error       text
+);
+alter table public.ingest_runs enable row level security;
+
+-- Single-call aggregate for the /pipeline page (read via service-role).
+create or replace function public.pipeline_stats() returns jsonb language sql stable as $func$
+  select jsonb_build_object(
+    'events', (select count(*) from public.events),
+    'source_rows', (select count(*) from public.event_sources),
+    'cross_source_merges', (
+      select count(*) from (
+        select event_id from public.event_sources group by event_id having count(distinct source) > 1
+      ) t),
+    'by_source', (
+      select coalesce(jsonb_agg(jsonb_build_object('source', source, 'count', n, 'last_seen', last_seen) order by n desc), '[]'::jsonb)
+      from (select source, count(*) n, max(seen_at) last_seen from public.event_sources group by source) s),
+    'runs', (
+      select coalesce(jsonb_agg(to_jsonb(r) order by r.ran_at desc), '[]'::jsonb)
+      from (select ran_at, status, sources, created, merged, source_rows, blurbs from public.ingest_runs order by ran_at desc limit 10) r)
+  );
+$func$;

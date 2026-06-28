@@ -54,6 +54,30 @@ export async function setBlurb(db: SupabaseClient, id: string, blurb: string): P
   if (error) throw new Error(`setBlurb failed (${id}): ${error.message}`);
 }
 
+export interface IngestRun {
+  status: "success" | "error";
+  sources: Record<string, number>;
+  created: number;
+  merged: number;
+  sourceRows: number;
+  blurbs: number;
+  error?: string | null;
+}
+
+/** Record one ingest run (powers the /pipeline status page). Best-effort. */
+export async function recordIngestRun(db: SupabaseClient, run: IngestRun): Promise<void> {
+  const { error } = await db.from("ingest_runs").insert({
+    status: run.status,
+    sources: run.sources,
+    created: run.created,
+    merged: run.merged,
+    source_rows: run.sourceRows,
+    blurbs: run.blurbs,
+    error: run.error ?? null,
+  });
+  if (error) console.error(`[ingest_runs] record failed: ${error.message}`);
+}
+
 interface ExistingEvent {
   id: string;
   artist: string | null;

@@ -92,6 +92,7 @@ export default function EventsBoard({
           What&apos;s on in <span className="accent">Atlanta</span>
         </h1>
         <p className="sub">Live music across the city — aggregated and deduped from multiple sources.</p>
+        <a className="pipelink" href="/pipeline">See how the pipeline works — live data-quality metrics →</a>
         <p className="stat" aria-live="polite">
           <strong>{filtered.length}</strong> {filtered.length === 1 ? "event" : "events"} from{" "}
           <strong>{sourceCount}</strong> {sourceCount === 1 ? "source" : "sources"}
@@ -206,7 +207,7 @@ export default function EventsBoard({
       )}
 
       <footer className="foot">
-        ATLive — automated ingestion pipeline (Ticketmaster + venue scrapers), deduped across sources.
+        ATLive — <a href="/pipeline">automated ingestion pipeline</a> (Ticketmaster + venue scrapers), deduped across sources.
       </footer>
     </main>
   );

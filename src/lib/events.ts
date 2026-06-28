@@ -66,3 +66,30 @@ export async function getUpcomingEvents(days = 14): Promise<UpcomingResult> {
     lastIngest,
   };
 }
+
+export interface PipelineStats {
+  events: number;
+  source_rows: number;
+  cross_source_merges: number;
+  by_source: { source: string; count: number; last_seen: string | null }[];
+  runs: {
+    ran_at: string;
+    status: string;
+    sources: Record<string, number> | null;
+    created: number | null;
+    merged: number | null;
+    source_rows: number | null;
+    blurbs: number | null;
+  }[];
+}
+
+/** Live pipeline metrics for the /pipeline page (single RPC; server-side only). */
+export async function getPipelineStats(): Promise<PipelineStats | null> {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) return null;
+  const db = createClient(url, key, { auth: { persistSession: false } });
+  const { data, error } = await db.rpc("pipeline_stats");
+  if (error || !data) return null;
+  return data as PipelineStats;
+}

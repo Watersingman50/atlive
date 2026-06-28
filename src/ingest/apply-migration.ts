@@ -20,6 +20,8 @@ const migration = readFileSync(migrationPath, "utf8");
 
 const RESET = `
 drop trigger if exists events_touch_updated_at on public.events;
+drop function if exists public.pipeline_stats() cascade;
+drop table if exists public.ingest_runs cascade;
 drop table if exists public.event_sources cascade;
 drop table if exists public.events cascade;
 drop function if exists public.touch_updated_at() cascade;
