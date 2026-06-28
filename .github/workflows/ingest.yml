@@ -1,0 +1,32 @@
+name: ingest
+
+# T2: scheduled ingestion. Runs in CI (no Vercel serverless timeout wall).
+# Repo secrets required: TM_API_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY.
+# GitHub emails the repo owner automatically when a scheduled run fails (X3 alert).
+
+on:
+  schedule:
+    - cron: "0 */6 * * *" # every 6 hours
+  workflow_dispatch: {} # manual "Run workflow" button
+
+concurrency:
+  group: ingest
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: Run ingestion
+        env:
+          TM_API_KEY: ${{ secrets.TM_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx src/ingest/run.ts

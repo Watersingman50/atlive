@@ -1,0 +1,23 @@
+{
+  "name": "atlive",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Automated Atlanta live-event discovery — ingestion pipeline + (later) Next.js site.",
+  "scripts": {
+    "ingest": "tsx --env-file=.env.local src/ingest/run.ts",
+    "ingest:dry": "tsx --env-file=.env.local src/ingest/run.ts --dry-run",
+    "db:apply": "tsx --env-file=.env.local src/ingest/apply-migration.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0",
+    "pg": "^8.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/pg": "^8.20.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}

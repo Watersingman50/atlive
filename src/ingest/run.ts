@@ -1,0 +1,54 @@
+import type { SourceAdapter } from "../lib/sources/adapter.js";
+import { ticketmasterAdapter } from "../lib/sources/ticketmaster.js";
+import { getClient, upsertEvents } from "../lib/db.js";
+
+// Ingest entrypoint. Runs on a schedule via GitHub Actions (T2).
+//
+//   for each adapter:  fetch+normalize  ──► (best-effort; one source failing
+//                                            does not abort the others, so the
+//                                            site degrades to TM-only, T4/X3)
+//   then:              upsert all into Supabase  (skipped in --dry-run)
+//
+// Stage A ships with [ticketmaster] only. Stage B appends the 529 + Variety
+// adapters to this list — no other change needed.
+
+const adapters: SourceAdapter[] = [ticketmasterAdapter()];
+
+async function main() {
+  const dryRun = process.argv.includes("--dry-run");
+  const collected = [];
+
+  for (const a of adapters) {
+    try {
+      const events = await a.fetchEvents();
+      console.log(`[${a.name}] fetched ${events.length} events`);
+      collected.push(...events);
+    } catch (err) {
+      // best-effort: log and keep going so one dead source never kills the run
+      console.error(`[${a.name}] FAILED: ${(err as Error).message}`);
+    }
+  }
+
+  console.log(`total normalized: ${collected.length}`);
+
+  if (dryRun) {
+    console.log("--dry-run: skipping DB writes. Sample:");
+    for (const e of collected.slice(0, 5)) {
+      console.log(`  ${e.eventDate ?? "?"}  ${e.title} @ ${e.venueName ?? "?"}`);
+    }
+    return;
+  }
+
+  const db = getClient();
+  if (!db) {
+    console.error("SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY not set — run with --dry-run, or fill .env.local.");
+    process.exit(1);
+  }
+  const res = await upsertEvents(db, collected);
+  console.log(`upserted: ${res.events} events, ${res.sources} source rows`);
+}
+
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
