@@ -50,6 +50,7 @@ export function varietyAdapter(): SourceAdapter {
           title: headFull,
           artist,
           venueName: VENUE,
+          genre: null,
           eventDate: iso ? iso.slice(0, 10) : null,
           startsAt: iso,
           url: e.ticketing?.url ?? e.ticketing?.eventUrl ?? null,

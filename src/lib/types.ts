@@ -9,6 +9,7 @@ export interface CanonicalEvent {
   title: string;
   artist: string | null;
   venueName: string | null;
+  genre: string | null;
   /** Local show date, YYYY-MM-DD. */
   eventDate: string | null;
   /** Full local start time (ISO), when the source provides it. */

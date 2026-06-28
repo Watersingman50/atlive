@@ -25,6 +25,7 @@ interface TMEvent {
   dates?: { start?: { localDate?: string; dateTime?: string } };
   images?: { url: string; width: number }[];
   priceRanges?: { min?: number }[];
+  classifications?: { genre?: { name?: string } }[];
   _embedded?: {
     venues?: { name?: string }[];
     attractions?: { name?: string }[];
@@ -40,12 +41,15 @@ function normalize(e: TMEvent): CanonicalEvent {
     ?.map((p) => p.min)
     .filter((n): n is number => typeof n === "number")
     .sort((a, b) => a - b)[0];
+  const genreName = e.classifications?.[0]?.genre?.name;
+  const genre = genreName && genreName !== "Undefined" ? genreName : null;
   return {
     sourceEventId: e.id,
     source: "ticketmaster",
     title: e.name,
     artist,
     venueName: venue,
+    genre,
     eventDate: e.dates?.start?.localDate ?? null,
     startsAt: e.dates?.start?.dateTime ?? null,
     url: e.url ?? null,

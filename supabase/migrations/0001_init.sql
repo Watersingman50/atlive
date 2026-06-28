@@ -36,6 +36,7 @@ create table if not exists public.events (
   title         text not null,
   artist        text,
   venue_name    text,
+  genre         text,                           -- e.g. Rock, Pop, Hip-Hop (from Ticketmaster classifications)
   city          text default 'Atlanta',
   event_date    date,                           -- local show date (for "this week" queries)
   starts_at     timestamptz,                    -- full local start, when known

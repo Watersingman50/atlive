@@ -79,6 +79,7 @@ export function venue529Adapter(): SourceAdapter {
               title: headliner,
               artist: headliner,
               venueName: "529",
+              genre: null,
               eventDate,
               startsAt: null,
               url: detailHref || ticketHref,

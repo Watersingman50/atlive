@@ -113,6 +113,7 @@ export async function upsertEvents(
           title: e.title,
           artist: e.artist,
           venue_name: e.venueName,
+          genre: e.genre,
           event_date: e.eventDate,
           starts_at: e.startsAt,
           url: e.url,
