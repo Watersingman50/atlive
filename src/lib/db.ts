@@ -21,6 +21,37 @@ export interface UpsertResult {
   sources: number;
 }
 
+export interface EventNeedingBlurb {
+  id: string;
+  title: string;
+  artist: string | null;
+  venue_name: string | null;
+}
+
+/** Upcoming events with no blurb yet (generate-once; bounded to control cost). */
+export async function getEventsNeedingBlurbs(
+  db: SupabaseClient,
+  limit = 40,
+): Promise<EventNeedingBlurb[]> {
+  const today = new Date().toISOString().slice(0, 10);
+  const end = new Date(Date.now() + 30 * 86_400_000).toISOString().slice(0, 10);
+  const { data, error } = await db
+    .from("events")
+    .select("id,title,artist,venue_name")
+    .is("blurb", null)
+    .gte("event_date", today)
+    .lte("event_date", end)
+    .order("event_date", { ascending: true })
+    .limit(limit);
+  if (error) throw new Error(`getEventsNeedingBlurbs failed: ${error.message}`);
+  return (data as EventNeedingBlurb[] | null) ?? [];
+}
+
+export async function setBlurb(db: SupabaseClient, id: string, blurb: string): Promise<void> {
+  const { error } = await db.from("events").update({ blurb }).eq("id", id);
+  if (error) throw new Error(`setBlurb failed (${id}): ${error.message}`);
+}
+
 export async function upsertEvents(
   db: SupabaseClient,
   events: CanonicalEvent[],

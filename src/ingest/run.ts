@@ -2,7 +2,8 @@ import type { SourceAdapter } from "../lib/sources/adapter.js";
 import { ticketmasterAdapter } from "../lib/sources/ticketmaster.js";
 import { venue529Adapter } from "../lib/sources/venue529.js";
 import { varietyAdapter } from "../lib/sources/variety.js";
-import { getClient, upsertEvents } from "../lib/db.js";
+import { getClient, upsertEvents, getEventsNeedingBlurbs, setBlurb } from "../lib/db.js";
+import { generateBlurb, blurbsEnabled } from "../lib/llm/blurb.js";
 
 // Ingest entrypoint. Runs on a schedule via GitHub Actions (T2).
 //
@@ -48,6 +49,27 @@ async function main() {
   }
   const res = await upsertEvents(db, collected);
   console.log(`upserted: ${res.events} events, ${res.sources} source rows`);
+
+  // T8: fill missing blurbs (generate-once, bounded). Best-effort — a blurb
+  // failure never fails the ingest; the page falls back to the title.
+  if (!blurbsEnabled()) {
+    console.log("blurbs: skipped (no ANTHROPIC_API_KEY)");
+    return;
+  }
+  const need = await getEventsNeedingBlurbs(db, 40);
+  let filled = 0;
+  for (const e of need) {
+    try {
+      const blurb = await generateBlurb({ title: e.title, artist: e.artist, venue: e.venue_name });
+      if (blurb) {
+        await setBlurb(db, e.id, blurb);
+        filled++;
+      }
+    } catch {
+      break; // rate-limited or fatal LLM error — stop the batch, retry next run
+    }
+  }
+  console.log(`blurbs: filled ${filled}/${need.length}`);
 }
 
 main().catch((err) => {
