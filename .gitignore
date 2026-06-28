@@ -13,3 +13,6 @@ next-env.d.ts
 
 # vercel
 .vercel
+
+# local tooling / security reports
+.gstack/

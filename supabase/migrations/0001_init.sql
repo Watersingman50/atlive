@@ -78,3 +78,9 @@ drop trigger if exists events_touch_updated_at on public.events;
 create trigger events_touch_updated_at
   before update on public.events
   for each row execute function public.touch_updated_at();
+
+-- Defense-in-depth: enable RLS with NO policies. The app and ingest use the
+-- service-role key (which bypasses RLS), so they're unaffected; anon/authenticated
+-- roles get zero rows. Nothing reads this DB except trusted server-side code.
+alter table public.events enable row level security;
+alter table public.event_sources enable row level security;
