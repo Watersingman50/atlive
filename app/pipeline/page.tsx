@@ -55,10 +55,33 @@ export default async function Pipeline() {
 
   return (
     <main className="wrap">
-      <header className="head">
-        <p className="crumb">
-          <Link href="/">← ATLive</Link>
-        </p>
+      <nav className="nav" aria-label="Primary">
+        <Link className="brand" href="/" aria-label="ATLive home">
+          <span className="mark">A</span>
+          <span className="word">
+            AT<b>Live</b>
+          </span>
+        </Link>
+        <ul className="navlinks">
+          <li>
+            <Link href="/">
+              <span className="idx">01</span> Events
+            </Link>
+          </li>
+          <li>
+            <Link href="/pipeline" aria-current="page">
+              <span className="idx">02</span> Pipeline
+            </Link>
+          </li>
+          <li>
+            <Link href="/#about">
+              <span className="idx">03</span> About
+            </Link>
+          </li>
+        </ul>
+      </nav>
+
+      <header className="head hero">
         <h1>
           Pipeline &amp; <span className="accent">data quality</span>
         </h1>
