@@ -1,0 +1,33 @@
+{
+  "overall": {
+    "correct": 29,
+    "total": 30,
+    "pct": 96.7
+  },
+  "byField": [
+    {
+      "field": "artist",
+      "correct": 9,
+      "total": 10
+    },
+    {
+      "field": "date",
+      "correct": 10,
+      "total": 10
+    },
+    {
+      "field": "venue",
+      "correct": 10,
+      "total": 10
+    }
+  ],
+  "misses": [
+    {
+      "id": "variety:1458556",
+      "field": "artist",
+      "expected": "feeble little horse",
+      "got": "feeble little horse: bitknot tour"
+    }
+  ],
+  "labeledCount": 10
+}
