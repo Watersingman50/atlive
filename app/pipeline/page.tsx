@@ -13,6 +13,8 @@ const result = evalJson as EvalResult;
 export const metadata: Metadata = {
   title: "ATLive — How it works",
   description: "The engine behind ATLive: scheduled ingest, cross-source dedupe, and a measured extraction eval.",
+  alternates: { canonical: "/pipeline" },
+  openGraph: { type: "website", url: "/pipeline" },
 };
 
 const REPO = "https://github.com/Watersingman50/atlive";

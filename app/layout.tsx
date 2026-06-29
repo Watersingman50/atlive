@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Manrope, Space_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const display = Space_Grotesk({
@@ -12,6 +13,7 @@ const body = Manrope({ subsets: ["latin"], variable: "--font-body" });
 const mono = Space_Mono({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-mono" });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "ATLive — Live music in Atlanta tonight",
   description: "Every live music show in Atlanta this week — one page, always current.",
 };
