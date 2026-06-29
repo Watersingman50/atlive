@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getPipelineStats } from "@/lib/events";
+import BrandMark from "../BrandMark";
 
 export const revalidate = 3600;
 
@@ -57,7 +58,7 @@ export default async function Pipeline() {
     <main className="wrap">
       <nav className="nav" aria-label="Primary">
         <Link className="brand" href="/" aria-label="ATLive home">
-          <span className="mark">A</span>
+          <BrandMark className="mark" />
           <span className="word">
             AT<b>Live</b>
           </span>

@@ -1,0 +1,71 @@
+// Brand mark — the peach marquee sign. Kept byte-for-byte in sync with the
+// favicon at app/icon.svg (Next.js App Router auto-serves that file as the
+// favicon). If you change one, change the other.
+
+export default function BrandMark({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="64"
+      height="64"
+      viewBox="0 0 64 64"
+      xmlns="http://www.w3.org/2000/svg"
+      role="img"
+      aria-label="ATLive"
+    >
+      <defs>
+        <linearGradient id="dusk" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#241A45" />
+          <stop offset="1" stopColor="#3A1E54" />
+        </linearGradient>
+        <radialGradient id="peach" cx="40%" cy="35%" r="75%">
+          <stop offset="0" stopColor="#FFB07C" />
+          <stop offset="55%" stopColor="#FF8A5B" />
+          <stop offset="100%" stopColor="#F2643E" />
+        </radialGradient>
+        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="0.7" result="b" />
+          <feMerge>
+            <feMergeNode in="b" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+
+      {/* sign panel */}
+      <rect x="1.5" y="1.5" width="61" height="61" rx="15" fill="url(#dusk)" stroke="#FF6B6B" strokeWidth="2" />
+
+      {/* marquee bulb ring */}
+      <g fill="#FFE9C7" filter="url(#glow)">
+        <circle cx="57" cy="32" r="2.1" />
+        <circle cx="53.65" cy="44.5" r="2.1" />
+        <circle cx="44.5" cy="53.65" r="2.1" />
+        <circle cx="32" cy="57" r="2.1" />
+        <circle cx="19.5" cy="53.65" r="2.1" />
+        <circle cx="10.35" cy="44.5" r="2.1" />
+        <circle cx="7" cy="32" r="2.1" />
+        <circle cx="10.35" cy="19.5" r="2.1" />
+        <circle cx="19.5" cy="10.35" r="2.1" />
+        <circle cx="32" cy="7" r="2.1" />
+        <circle cx="44.5" cy="10.35" r="2.1" />
+        <circle cx="53.65" cy="19.5" r="2.1" />
+      </g>
+
+      {/* peach */}
+      <g transform="translate(0,1)">
+        <circle cx="32" cy="33" r="12.6" fill="url(#peach)" />
+        <path
+          d="M32 21.5 C 30.4 26, 30.4 40, 32 44.5"
+          fill="none"
+          stroke="#D94F2E"
+          strokeWidth="1.4"
+          strokeLinecap="round"
+          opacity="0.55"
+        />
+        <ellipse cx="27.5" cy="29.5" rx="3.4" ry="2.2" fill="#FFD9BD" opacity="0.7" transform="rotate(-25 27.5 29.5)" />
+        <path d="M32 21.5 C 33 18.5, 36.5 17.5, 39 18.5 C 37 21, 34.5 22, 32 21.5 Z" fill="#3FB6A0" />
+        <path d="M32 22 C 32 20, 32.2 19, 33 17.8" fill="none" stroke="#6B4A2B" strokeWidth="1.3" strokeLinecap="round" />
+      </g>
+    </svg>
+  );
+}

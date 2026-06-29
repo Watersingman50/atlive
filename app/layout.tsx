@@ -13,8 +13,7 @@ const mono = Space_Mono({ subsets: ["latin"], weight: ["400", "700"], variable: 
 
 export const metadata: Metadata = {
   title: "ATLive — Live music in Atlanta tonight",
-  description:
-    "Automated weekly roundup of live music across Atlanta, aggregated and deduped from multiple sources.",
+  description: "Every live music show in Atlanta this week — one page, always current.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

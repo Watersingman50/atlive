@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import type { UpcomingEvent } from "@/lib/events";
 import { neighborhoodOf } from "@/lib/neighborhoods";
+import BrandMark from "./BrandMark";
 
 type DateFilter = "all" | "this" | "next";
 
@@ -63,7 +64,7 @@ export default function EventsBoard({
       else hasOther = true;
     }
     const list = [...set].sort();
-    if (hasOther) list.push("Other");
+    if (hasOther && !set.has("Other")) list.push("Other");
     return list;
   }, [events]);
   const hoods = useMemo(
@@ -84,11 +85,6 @@ export default function EventsBoard({
       return true;
     });
   }, [events, venue, genre, hood, dateFilter, today, in7]);
-
-  const sourceCount = useMemo(
-    () => new Set(filtered.flatMap((e) => e.event_sources.map((s) => s.source))).size,
-    [filtered],
-  );
 
   const anyFilter = dateFilter !== "all" || venue !== "all" || genre !== "all" || hood !== "all";
   const clearFilters = () => {
@@ -119,7 +115,7 @@ export default function EventsBoard({
     <main className="wrap">
       <nav className="nav" aria-label="Primary">
         <a className="brand" href="/" aria-label="ATLive home">
-          <span className="mark">A</span>
+          <BrandMark className="mark" />
           <span className="word">
             AT<b>Live</b>
           </span>
@@ -151,19 +147,18 @@ export default function EventsBoard({
         <h1 className={reduce ? "" : "glitch-in"}>
           Live music in <span className="accent">Atlanta</span>
         </h1>
-        <p className="sub">
-          Every show in the city, aggregated and deduped from multiple sources — venues, ticketing APIs, and scrapers,
-          on one self-updating board.
-        </p>
+        <p className="sub">Every gig in Atlanta this week, in one place — updated automatically.</p>
         <p className="stat" aria-live="polite">
           <span className="livedot" />
-          <strong>{filtered.length}</strong> {filtered.length === 1 ? "event" : "events"} from{" "}
-          <strong>{sourceCount}</strong> {sourceCount === 1 ? "source" : "sources"}
+          <strong>{filtered.length}</strong>{" "}
+          {dateFilter === "all"
+            ? `upcoming ${filtered.length === 1 ? "show" : "shows"}`
+            : `${filtered.length === 1 ? "show" : "shows"} ${dateFilter === "this" ? "this" : "next"} week`}
           {lastIngest && <span> · updated {relTime(lastIngest)}</span>}
         </p>
         {stale && (
           <div className="banner" role="status">
-            Heads up — the data feed hasn&apos;t refreshed in over 9 hours, so some events may be out of date.
+            Last updated {Math.round(ageHours ?? 0)}h ago — double-check the venue before you head out.
           </div>
         )}
       </header>
@@ -329,7 +324,7 @@ export default function EventsBoard({
       </section>
 
       <footer className="foot">
-        ATLive — <a href="/pipeline">automated ingestion pipeline</a> (Ticketmaster + venue scrapers), deduped across sources.
+        Built in Atlanta · showtimes from venues + Ticketmaster.
       </footer>
     </main>
   );
