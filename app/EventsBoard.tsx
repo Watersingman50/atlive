@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import type { UpcomingEvent } from "@/lib/events";
 import { neighborhoodOf } from "@/lib/neighborhoods";
@@ -114,22 +115,22 @@ export default function EventsBoard({
   return (
     <main className="wrap">
       <nav className="nav" aria-label="Primary">
-        <a className="brand" href="/" aria-label="ATLive home">
+        <Link className="brand" href="/" aria-label="ATLive home">
           <BrandMark className="mark" />
           <span className="word">
             AT<b>Live</b>
           </span>
-        </a>
+        </Link>
         <ul className="navlinks">
           <li>
-            <a href="/" aria-current="page">
+            <Link href="/" aria-current="page">
               <span className="idx">01</span> Events
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="/pipeline">
+            <Link href="/pipeline">
               <span className="idx">02</span> Pipeline
-            </a>
+            </Link>
           </li>
           <li>
             <a href="#about">
