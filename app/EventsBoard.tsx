@@ -6,6 +6,7 @@ import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import type { UpcomingEvent } from "@/lib/events";
 import { neighborhoodOf } from "@/lib/neighborhoods";
 import BrandMark from "./BrandMark";
+import SignupForm from "./SignupForm";
 
 type DateFilter = "all" | "this" | "next";
 
@@ -323,6 +324,8 @@ export default function EventsBoard({
           <span className="chip multi">deduped · evaluated</span>
         </div>
       </section>
+
+      <SignupForm />
 
       <footer className="foot">
         Built in Atlanta · showtimes from venues + Ticketmaster.

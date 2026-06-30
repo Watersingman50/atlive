@@ -11,6 +11,7 @@
     "ingest": "tsx --env-file=.env.local src/ingest/run.ts",
     "ingest:dry": "tsx --env-file=.env.local src/ingest/run.ts --dry-run",
     "db:apply": "tsx --env-file=.env.local src/ingest/apply-migration.ts",
+    "db:subscribers": "tsx --env-file=.env.local src/ingest/apply-subscribers.ts",
     "digest": "tsx --env-file=.env.local src/digest/send.ts",
     "test": "node --import tsx --test \"src/lib/**/*.test.ts\"",
     "eval": "tsx eval/run.ts",
