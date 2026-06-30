@@ -23,7 +23,7 @@ export default function SignupForm() {
         return;
       }
       setState("done");
-      setMsg(j.message ?? "Almost there - check your inbox to confirm.");
+      setMsg(j.message ?? "You're on the list - the first roundup comes when we launch.");
     } catch {
       setState("error");
       setMsg("Network error - try again.");
@@ -32,8 +32,8 @@ export default function SignupForm() {
 
   return (
     <section className="signup-band" id="newsletter">
-      <h2>Get the Monday roundup</h2>
-      <p>One email a week: the best live music coming to Atlanta. No spam, unsubscribe anytime.</p>
+      <h2>Join the launch list</h2>
+      <p>Be first to get the weekly roundup of the best live music in Atlanta when we launch. No spam, unsubscribe anytime.</p>
       {state === "done" ? (
         <p className="signup-done" role="status">
           {msg}

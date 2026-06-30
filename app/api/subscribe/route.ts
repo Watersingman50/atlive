@@ -11,6 +11,12 @@ export const runtime = "nodejs";
 const LIMIT = 5;
 const WINDOW_MS = 60_000;
 
+// Waitlist mode (default ON): until a Resend sending domain is verified, store
+// signups but DON'T attempt a confirm email — it would 403 and dead-end the
+// user. The send path below stays wired; flip WAITLIST_MODE=false once a domain
+// is live to switch on real double opt-in. See waitlist:promote for launch day.
+const WAITLIST = process.env.WAITLIST_MODE !== "false";
+
 export async function POST(req: Request) {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   const rl = rateLimit(`subscribe:${ip}`, LIMIT, WINDOW_MS);
@@ -33,6 +39,15 @@ export async function POST(req: Request) {
   if (!r.ok) return NextResponse.json({ error: r.error }, { status: 400 });
   if (r.status === "already") {
     return NextResponse.json({ ok: true, message: "You're already on the list." });
+  }
+
+  // Waitlist mode: the pending signup is stored (above). Skip the confirm email
+  // entirely and tell the truth — no inbox to check yet.
+  if (WAITLIST) {
+    return NextResponse.json({
+      ok: true,
+      message: "You're on the list - the first roundup comes when we launch.",
+    });
   }
 
   // Double opt-in: send the confirm link. Best-effort — on the Resend free tier

@@ -12,6 +12,7 @@
     "ingest:dry": "tsx --env-file=.env.local src/ingest/run.ts --dry-run",
     "db:apply": "tsx --env-file=.env.local src/ingest/apply-migration.ts",
     "db:subscribers": "tsx --env-file=.env.local src/ingest/apply-subscribers.ts",
+    "waitlist:promote": "tsx --env-file=.env.local src/ingest/promote-waitlist.ts",
     "digest": "tsx --env-file=.env.local src/digest/send.ts",
     "draftpack": "tsx --env-file=.env.local src/social/draftpack.ts",
     "social": "tsx --env-file=.env.local src/social/post.ts",
