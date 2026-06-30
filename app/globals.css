@@ -651,6 +651,36 @@ select:hover {
 .foot a:hover {
   color: var(--accent);
 }
+/* compact, crawlable landing-page links (two rows: neighborhoods, genres) */
+.foot-links {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 20px;
+}
+.foot-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 3px 11px;
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+.foot-label {
+  flex: 0 0 auto;
+  min-width: 88px;
+  color: var(--muted-2);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 10px;
+}
+.foot-links a {
+  color: var(--muted);
+  text-decoration: none;
+}
+.foot-links a:hover {
+  color: var(--accent);
+}
 
 /* ---------- /pipeline page ---------- */
 .crumb {

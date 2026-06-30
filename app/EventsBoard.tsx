@@ -42,9 +42,12 @@ function relTime(iso: string): string {
 export default function EventsBoard({
   events,
   lastIngest,
+  landingLinks = [],
 }: {
   events: UpcomingEvent[];
   lastIngest: string | null;
+  /** Neighborhood/genre landing pages — compact crawlable links in the footer. */
+  landingLinks?: { slug: string; label: string; kind: "neighborhood" | "genre" }[];
 }) {
   const reduce = useReducedMotion();
   const [dateFilter, setDateFilter] = useState<DateFilter>("all");
@@ -316,7 +319,31 @@ export default function EventsBoard({
       <SignupForm />
 
       <footer className="foot">
-        Built in Atlanta · showtimes from venues + Ticketmaster.
+        {landingLinks.length > 0 && (
+          <nav className="foot-links" aria-label="Browse Atlanta live music by neighborhood and genre">
+            <div className="foot-row">
+              <span className="foot-label">Neighborhoods</span>
+              {landingLinks
+                .filter((l) => l.kind === "neighborhood")
+                .map((l) => (
+                  <Link key={l.slug} href={`/${l.slug}`}>
+                    {l.label}
+                  </Link>
+                ))}
+            </div>
+            <div className="foot-row">
+              <span className="foot-label">Genres</span>
+              {landingLinks
+                .filter((l) => l.kind === "genre")
+                .map((l) => (
+                  <Link key={l.slug} href={`/${l.slug}`}>
+                    {l.label}
+                  </Link>
+                ))}
+            </div>
+          </nav>
+        )}
+        <p className="foot-tag">Built in Atlanta · showtimes from venues + Ticketmaster.</p>
       </footer>
     </main>
   );
