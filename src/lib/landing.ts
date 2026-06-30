@@ -68,19 +68,19 @@ const GENRES: { slug: string; label: string; keys: string[] }[] = [
 
 function neighborhoodDefaults(label: string) {
   return {
-    title: `Live Music in ${label}, Atlanta — Shows This Week | ATLive`,
-    description: `Upcoming concerts and live shows in ${label}, Atlanta. Auto-updated every few hours — find what's on near ${label} this week.`,
+    title: `Live Music in ${label}, Atlanta - Shows This Week | ATLive`,
+    description: `Upcoming concerts and live shows in ${label}, Atlanta. Auto-updated every few hours - find what's on near ${label} this week.`,
     h1: `Live music in ${label}`,
-    intro: `Every upcoming show at ${label} venues, in one place. ${label} is one of Atlanta's live-music neighborhoods — here's what's coming up, updated automatically.`,
+    intro: `Every upcoming show at ${label} venues, in one place. ${label} is one of Atlanta's live-music neighborhoods - here's what's coming up, updated automatically.`,
   };
 }
 
 function genreDefaults(label: string) {
   return {
-    title: `${label} Concerts in Atlanta — Upcoming Shows | ATLive`,
+    title: `${label} Concerts in Atlanta - Upcoming Shows | ATLive`,
     description: `Upcoming ${label} concerts and live shows in Atlanta this week. An auto-updated lineup of ${label} gigs across the city.`,
     h1: `${label} shows in Atlanta`,
-    intro: `Every upcoming ${label} show in Atlanta, in one place — pulled from Ticketmaster and direct venue feeds, deduped, and updated automatically.`,
+    intro: `Every upcoming ${label} show in Atlanta, in one place - pulled from Ticketmaster and direct venue feeds, deduped, and updated automatically.`,
   };
 }
 

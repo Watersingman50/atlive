@@ -14,8 +14,8 @@ const mono = Space_Mono({ subsets: ["latin"], weight: ["400", "700"], variable: 
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: "ATLive — Live music in Atlanta tonight",
-  description: "Every live music show in Atlanta this week — one page, always current.",
+  title: "ATLive - Live music in Atlanta tonight",
+  description: "Every live music show in Atlanta this week - one page, always current.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

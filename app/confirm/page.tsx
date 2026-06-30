@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { confirm } from "@/lib/subscribers";
 
 export const dynamic = "force-dynamic"; // mutates by token, per-request
-export const metadata: Metadata = { title: "ATLive — Confirm subscription", robots: { index: false } };
+export const metadata: Metadata = { title: "ATLive - Confirm subscription", robots: { index: false } };
 
 export default async function ConfirmPage({
   searchParams,
@@ -17,7 +17,7 @@ export default async function ConfirmPage({
     result === "confirmed"
       ? { h: "You're in.", p: "You'll get the Monday roundup of live music in Atlanta. See you in your inbox." }
       : result === "already"
-        ? { h: "Already confirmed.", p: "You're on the list — nothing more to do." }
+        ? { h: "Already confirmed.", p: "You're on the list - nothing more to do." }
         : { h: "That link didn't work.", p: "It may have expired or already been used. Try signing up again from the homepage." };
 
   return (

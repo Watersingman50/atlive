@@ -8,7 +8,7 @@ import type { EvalResult } from "@/lib/extraction-eval";
 import type { PipelineStats } from "@/lib/events";
 
 function rel(iso: string | null): string {
-  if (!iso) return "—";
+  if (!iso) return "-";
   const m = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60_000));
   if (m < 2) return "just now";
   if (m < 60) return `${m}m ago`;
@@ -159,7 +159,7 @@ export function DedupViz({ sourceRows, events, merges }: { sourceRows: number; e
       </div>
       <figcaption className="chart-cap">
         Match is exact-key first, then a token-set fuzzy fallback, guarded by a false-merge test so two different acts
-        on the same night never merge. (No precision/recall here — there&apos;s no labeled dedup ground truth to score
+        on the same night never merge. (No precision/recall here - there&apos;s no labeled dedup ground truth to score
         against, so it&apos;s not invented.)
       </figcaption>
     </figure>
@@ -170,7 +170,7 @@ export function DedupViz({ sourceRows, events, merges }: { sourceRows: number; e
 
 export function IngestVolume({ runs }: { runs: PipelineStats["runs"] }) {
   if (runs.length === 0) {
-    return <p className="note">No runs recorded yet — the next scheduled ingest will populate this.</p>;
+    return <p className="note">No runs recorded yet - the next scheduled ingest will populate this.</p>;
   }
   // oldest → newest for a left-to-right timeline
   const ordered = [...runs].reverse();
@@ -195,7 +195,7 @@ export function IngestVolume({ runs }: { runs: PipelineStats["runs"] }) {
       </div>
       <figcaption className="chart-cap">
         Source rows pulled per run ({runs.length} recorded). Upserts are idempotent, so re-runs add few new rows by
-        design — the value is consistency, not growth.
+        design - the value is consistency, not growth.
       </figcaption>
     </figure>
   );

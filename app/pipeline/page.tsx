@@ -11,7 +11,7 @@ export const revalidate = 3600;
 const result = evalJson as EvalResult;
 
 export const metadata: Metadata = {
-  title: "ATLive — How it works",
+  title: "ATLive - How it works",
   description: "The engine behind ATLive: scheduled ingest, cross-source dedupe, and a measured extraction eval.",
   alternates: { canonical: "/pipeline" },
   openGraph: { type: "website", url: "/pipeline" },
@@ -20,10 +20,10 @@ export const metadata: Metadata = {
 const REPO = "https://github.com/Watersingman50/atlive";
 
 const fmtAbs = (iso: string | null) =>
-  iso ? new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "—";
+  iso ? new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "-";
 
 function rel(iso: string | null): string {
-  if (!iso) return "—";
+  if (!iso) return "-";
   const m = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60_000));
   if (m < 2) return "just now";
   if (m < 60) return `${m}m ago`;
@@ -76,7 +76,7 @@ export default async function Pipeline() {
         </h1>
         <p className="sub">
           ATLive isn&apos;t a hand-kept list. A scheduled pipeline ingests, dedupes, and measures itself. Every number
-          here is live from the database or the eval harness — nothing is typed in by hand.
+          here is live from the database or the eval harness - nothing is typed in by hand.
         </p>
       </header>
 
@@ -153,9 +153,9 @@ export default async function Pipeline() {
                   <td>
                     <span className={`rstatus ${r.status === "success" ? "ok" : "bad"}`}>{r.status}</span>
                   </td>
-                  <td>{r.created ?? "—"}</td>
-                  <td>{r.merged ?? "—"}</td>
-                  <td>{r.blurbs ?? "—"}</td>
+                  <td>{r.created ?? "-"}</td>
+                  <td>{r.merged ?? "-"}</td>
+                  <td>{r.blurbs ?? "-"}</td>
                 </tr>
               ))}
             </tbody>

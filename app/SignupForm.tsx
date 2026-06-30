@@ -23,10 +23,10 @@ export default function SignupForm() {
         return;
       }
       setState("done");
-      setMsg(j.message ?? "Almost there — check your inbox to confirm.");
+      setMsg(j.message ?? "Almost there - check your inbox to confirm.");
     } catch {
       setState("error");
-      setMsg("Network error — try again.");
+      setMsg("Network error - try again.");
     }
   }
 

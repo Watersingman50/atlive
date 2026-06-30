@@ -16,7 +16,7 @@ export async function POST(req: Request) {
   const rl = rateLimit(`subscribe:${ip}`, LIMIT, WINDOW_MS);
   if (!rl.ok) {
     return NextResponse.json(
-      { error: "Too many requests — please try again in a minute." },
+      { error: "Too many requests - please try again in a minute." },
       { status: 429, headers: { "Retry-After": String(rl.retryAfter) } },
     );
   }
@@ -50,5 +50,5 @@ export async function POST(req: Request) {
     console.warn("subscribe: RESEND_API_KEY not set — no confirm email sent");
   }
 
-  return NextResponse.json({ ok: true, message: "Almost there — check your inbox to confirm." });
+  return NextResponse.json({ ok: true, message: "Almost there - check your inbox to confirm." });
 }

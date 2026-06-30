@@ -20,7 +20,7 @@ export default function LandingEvents({ events }: { events: UpcomingEvent[] }) {
   if (events.length === 0) {
     return (
       <div className="empty">
-        <p>No shows on the board for this right now — the pipeline ingests every few hours, so fresh listings land automatically. Check back soon.</p>
+        <p>No shows on the board for this right now - the pipeline ingests every few hours, so fresh listings land automatically. Check back soon.</p>
         <a className="empty-act" href="/">
           Browse everything in Atlanta →
         </a>
