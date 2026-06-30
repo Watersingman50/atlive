@@ -31,6 +31,8 @@ export async function sendEmail(opts: {
   subject: string;
   html: string;
   from?: string;
+  /** Resend attachments: filename + base64 content. */
+  attachments?: { filename: string; content: string }[];
 }): Promise<{ ok: boolean; id?: string; error?: string }> {
   if (!KEY) return { ok: false, error: "RESEND_API_KEY not set" };
   const res = await fetch("https://api.resend.com/emails", {
@@ -42,6 +44,7 @@ export async function sendEmail(opts: {
       subject: opts.subject,
       html: opts.html,
       ...(REPLY_TO ? { reply_to: REPLY_TO } : {}),
+      ...(opts.attachments?.length ? { attachments: opts.attachments } : {}),
     }),
   });
   if (!res.ok) return { ok: false, error: `Resend ${res.status}: ${await res.text()}` };

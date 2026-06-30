@@ -2,6 +2,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { getUpcomingEvents } from "../lib/events.js";
 import { sendEmail, emailEnabled, esc } from "../lib/email.js";
 import { igCaption, redditPost } from "./compose.js";
+import { posterPng } from "./image.js";
 
 // Weekly DRAFT PACK for the channels we never auto-post to (Instagram + Reddit
 // — both ban automated posting). Builds ready-to-paste copy, writes it to
@@ -25,6 +26,14 @@ async function main() {
   const reddit = redditPost(events);
   const stamp = new Date().toISOString().slice(0, 10);
 
+  // Roundup poster (real data). 1080×1350 — ready to post on Instagram as-is.
+  let poster: Buffer | null = null;
+  try {
+    poster = posterPng(events);
+  } catch (e) {
+    console.warn(`draftpack: poster render failed (drafts still written): ${(e as Error).message}`);
+  }
+
   const md = [
     `# ATLive draft pack — week of ${stamp}`,
     "",
@@ -36,7 +45,9 @@ async function main() {
     ig,
     "```",
     "",
-    "_Image idea: screenshot the homepage grid, or the poster of the top show. 1080×1350 (4:5) performs best._",
+    poster
+      ? `_Poster image: \`drafts/${stamp}.png\` (1080×1350, ready to post — also attached to this email)._`
+      : "_Poster image: render failed this run — post text-only or screenshot the homepage grid._",
     "",
     "## Reddit post (r/Atlanta, r/atlanta_music, or a relevant venue/genre sub)",
     "",
@@ -50,14 +61,17 @@ async function main() {
     "",
   ].join("\n");
 
-  // Local artifact (handy when run on a dev machine; ephemeral in CI).
+  // Local artifacts (handy when run on a dev machine; ephemeral in CI).
   try {
     mkdirSync("drafts", { recursive: true });
-    const path = `drafts/${stamp}.md`;
-    writeFileSync(path, md, "utf8");
-    console.log(`draftpack: wrote ${path}`);
+    writeFileSync(`drafts/${stamp}.md`, md, "utf8");
+    console.log(`draftpack: wrote drafts/${stamp}.md`);
+    if (poster) {
+      writeFileSync(`drafts/${stamp}.png`, poster);
+      console.log(`draftpack: wrote drafts/${stamp}.png`);
+    }
   } catch (e) {
-    console.warn(`draftpack: could not write local file: ${(e as Error).message}`);
+    console.warn(`draftpack: could not write local files: ${(e as Error).message}`);
   }
 
   const to = process.env.DRAFTS_TO || process.env.DIGEST_TO;
@@ -65,6 +79,7 @@ async function main() {
     const html = `<!doctype html><html><body style="margin:0;background:#f6f6f4;padding:20px;font-family:-apple-system,Segoe UI,sans-serif">
       <h2 style="color:#111">ATLive draft pack — week of ${esc(stamp)}</h2>
       <p style="color:#555;font-size:14px">Ready-to-paste social drafts. Manual posting only (IG + Reddit ban automation).</p>
+      ${poster ? `<p style="color:#555;font-size:14px">📎 Roundup poster attached (1080×1350) — ready to post on Instagram.</p>` : ""}
       <h3 style="color:#111">Instagram caption</h3>
       <pre style="white-space:pre-wrap;background:#fff;border:1px solid #e3e3e0;border-radius:8px;padding:14px;font-size:13px;color:#222">${esc(ig)}</pre>
       <h3 style="color:#111">Reddit — title</h3>
@@ -72,7 +87,12 @@ async function main() {
       <h3 style="color:#111">Reddit — body</h3>
       <pre style="white-space:pre-wrap;background:#fff;border:1px solid #e3e3e0;border-radius:8px;padding:14px;font-size:13px;color:#222">${esc(reddit.body)}</pre>
     </body></html>`;
-    const res = await sendEmail({ to, subject: `ATLive draft pack — week of ${stamp}`, html });
+    const res = await sendEmail({
+      to,
+      subject: `ATLive draft pack — week of ${stamp}`,
+      html,
+      attachments: poster ? [{ filename: `atlive-${stamp}.png`, content: poster.toString("base64") }] : undefined,
+    });
     if (res.ok) console.log(`draftpack: emailed drafts to ${to}`);
     else console.error(`draftpack: email failed: ${res.error}`);
   } else {
