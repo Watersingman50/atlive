@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import { getUpcomingEvents } from "@/lib/events";
 
@@ -10,6 +12,13 @@ export const revalidate = 3600;
 export const alt = "ATLive - live music in Atlanta this week";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
+
+// Vendored brand font, STATIC instances (satori can't parse the variable
+// font's fvar table). next.config bundles these into this function (see
+// outputFileTracingIncludes) so the disk reads work at runtime on Vercel.
+const fontDir = join(process.cwd(), "assets/fonts");
+const sgRegular = readFileSync(join(fontDir, "SpaceGrotesk-Regular.ttf"));
+const sgBold = readFileSync(join(fontDir, "SpaceGrotesk-Bold.ttf"));
 
 export default async function Image() {
   let count = 0;
@@ -32,7 +41,7 @@ export default async function Image() {
           justifyContent: "space-between",
           background: "#121212",
           padding: "72px",
-          fontFamily: "sans-serif",
+          fontFamily: "Space Grotesk",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
@@ -70,6 +79,12 @@ export default async function Image() {
         </div>
       </div>
     ),
-    { ...size },
+    {
+      ...size,
+      fonts: [
+        { name: "Space Grotesk", data: sgRegular, weight: 400, style: "normal" },
+        { name: "Space Grotesk", data: sgBold, weight: 700, style: "normal" },
+      ],
+    },
   );
 }
