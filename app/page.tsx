@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { getUpcomingEvents } from "@/lib/events";
 import { itemListJsonLd, jsonLdScript } from "@/lib/seo";
-import { landingPages } from "@/lib/landing";
 import EventsBoard from "./EventsBoard";
 
 // ISR: statically rendered, revalidated hourly. The fetch + cache happen here
@@ -24,12 +23,10 @@ export default async function Home() {
   // empty state below.
   if (error) throw new Error(`events query failed: ${error}`);
 
-  const landingLinks = landingPages().map((p) => ({ slug: p.slug, label: p.label, kind: p.kind }));
-
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(itemListJsonLd(events)) }} />
-      <EventsBoard events={events} lastIngest={lastIngest} landingLinks={landingLinks} />
+      <EventsBoard events={events} lastIngest={lastIngest} />
     </>
   );
 }

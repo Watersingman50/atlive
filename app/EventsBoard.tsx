@@ -7,6 +7,7 @@ import type { UpcomingEvent } from "@/lib/events";
 import { neighborhoodOf } from "@/lib/neighborhoods";
 import BrandMark from "./BrandMark";
 import SignupForm from "./SignupForm";
+import MultiSelect from "./MultiSelect";
 
 type DateFilter = "all" | "this" | "next";
 
@@ -41,17 +42,15 @@ function relTime(iso: string): string {
 export default function EventsBoard({
   events,
   lastIngest,
-  landingLinks = [],
 }: {
   events: UpcomingEvent[];
   lastIngest: string | null;
-  /** Neighborhood/genre landing pages, for crawlable internal links. */
-  landingLinks?: { slug: string; label: string; kind: "neighborhood" | "genre" }[];
 }) {
   const reduce = useReducedMotion();
   const [dateFilter, setDateFilter] = useState<DateFilter>("all");
-  const [venue, setVenue] = useState<string>("all");
-  const [genre, setGenre] = useState<string>("all");
+  // Multi-select: empty array = no filter (all).
+  const [selVenues, setSelVenues] = useState<string[]>([]);
+  const [selGenres, setSelGenres] = useState<string[]>([]);
   const [hood, setHood] = useState<string>("all");
 
   const today = iso(new Date());
@@ -79,8 +78,8 @@ export default function EventsBoard({
 
   const filtered = useMemo(() => {
     return events.filter((e) => {
-      if (venue !== "all" && e.venue_name !== venue) return false;
-      if (genre !== "all" && (e.genre ?? "Other") !== genre) return false;
+      if (selVenues.length && (!e.venue_name || !selVenues.includes(e.venue_name))) return false;
+      if (selGenres.length && !selGenres.includes(e.genre ?? "Other")) return false;
       if (hood !== "all" && neighborhoodOf(e.venue_name) !== hood) return false;
       if (dateFilter !== "all" && e.event_date) {
         const inThisWeek = e.event_date >= today && e.event_date < in7;
@@ -89,13 +88,13 @@ export default function EventsBoard({
       }
       return true;
     });
-  }, [events, venue, genre, hood, dateFilter, today, in7]);
+  }, [events, selVenues, selGenres, hood, dateFilter, today, in7]);
 
-  const anyFilter = dateFilter !== "all" || venue !== "all" || genre !== "all" || hood !== "all";
+  const anyFilter = dateFilter !== "all" || selVenues.length > 0 || selGenres.length > 0 || hood !== "all";
   const clearFilters = () => {
     setDateFilter("all");
-    setVenue("all");
-    setGenre("all");
+    setSelVenues([]);
+    setSelGenres([]);
     setHood("all");
   };
 
@@ -152,7 +151,7 @@ export default function EventsBoard({
         <h1 className={reduce ? "" : "glitch-in"}>
           Live music in <span className="accent">Atlanta</span>
         </h1>
-        <p className="sub">Every gig in Atlanta this week, in one place - updated automatically.</p>
+        <p className="sub">Every gig in Atlanta this week, in one place. Updated automatically.</p>
         <p className="stat" aria-live="polite">
           <span className="livedot" />
           <strong>{filtered.length}</strong>{" "}
@@ -167,31 +166,6 @@ export default function EventsBoard({
           </div>
         )}
       </header>
-
-      {landingLinks.length > 0 && (
-        <nav className="browse browse-top" aria-label="Browse Atlanta live music">
-          <h2 className="browse-h">Browse by neighborhood</h2>
-          <ul className="browse-links">
-            {landingLinks
-              .filter((l) => l.kind === "neighborhood")
-              .map((l) => (
-                <li key={l.slug}>
-                  <Link href={`/${l.slug}`}>{l.label}</Link>
-                </li>
-              ))}
-          </ul>
-          <h2 className="browse-h">Browse by genre</h2>
-          <ul className="browse-links">
-            {landingLinks
-              .filter((l) => l.kind === "genre")
-              .map((l) => (
-                <li key={l.slug}>
-                  <Link href={`/${l.slug}`}>{l.label}</Link>
-                </li>
-              ))}
-          </ul>
-        </nav>
-      )}
 
       <div className="filters">
         <div className="pillrow" role="group" aria-label="Filter by date">
@@ -212,23 +186,9 @@ export default function EventsBoard({
             </button>
           ))}
         </div>
-        <select value={venue} onChange={(e) => setVenue(e.target.value)} aria-label="Filter by venue">
-          <option value="all">All venues</option>
-          {venues.map((v) => (
-            <option key={v} value={v}>
-              {v}
-            </option>
-          ))}
-        </select>
+        <MultiSelect label="venues" options={venues} selected={selVenues} onChange={setSelVenues} />
         {genres.length > 0 && (
-          <select value={genre} onChange={(e) => setGenre(e.target.value)} aria-label="Filter by genre">
-            <option value="all">All genres</option>
-            {genres.map((g) => (
-              <option key={g} value={g}>
-                {g}
-              </option>
-            ))}
-          </select>
+          <MultiSelect label="genres" options={genres} selected={selGenres} onChange={setSelGenres} />
         )}
       </div>
 

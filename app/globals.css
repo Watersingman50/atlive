@@ -1009,13 +1009,6 @@ select:hover {
   padding-top: 28px;
   border-top: 1px solid var(--line);
 }
-/* Top-of-page variant (under the hero): no footer divider, tighter spacing. */
-.browse-top {
-  margin-top: 24px;
-  margin-bottom: 8px;
-  padding-top: 0;
-  border-top: none;
-}
 .browse-h {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -1048,4 +1041,92 @@ select:hover {
   color: var(--accent);
   border-color: var(--accent);
   background: var(--accent-soft);
+}
+
+/* Multi-select dropdown (venue / genre filters). Matches the .pill / select look. */
+.ms {
+  position: relative;
+  display: inline-flex;
+}
+.ms-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  min-height: 44px;
+  padding: 0 16px;
+  cursor: pointer;
+}
+.ms-btn:hover {
+  border-color: var(--line-2);
+}
+.ms-btn.on {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.ms-caret {
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid currentColor;
+  opacity: 0.7;
+}
+.ms-pop {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 30;
+  min-width: 220px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 6px;
+  background: var(--panel);
+  border: 1px solid var(--line-2);
+  border-radius: 14px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+}
+.ms-opt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 9px;
+  font-size: 13.5px;
+  color: var(--text);
+  cursor: pointer;
+}
+.ms-opt:hover {
+  background: var(--bg-2);
+}
+.ms-opt input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.ms-clear {
+  width: 100%;
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--line);
+  padding: 6px 10px 10px;
+  margin-bottom: 4px;
+  cursor: pointer;
+}
+.ms-clear:hover {
+  color: var(--accent);
 }
