@@ -1,12 +1,23 @@
 // Shared Resend sender + HTML escaping + the double-opt-in confirm template.
 // The weekly digest builds its own body but sends through sendEmail() here.
 //
+// Senders are fully env-driven so the whole thing goes branded the moment a
+// domain is verified in Resend — no code change, just set the env vars:
+//   EMAIL_FROM      transactional sender (confirm emails). Default below.
+//   DIGEST_FROM     weekly-digest sender (falls back to EMAIL_FROM).
+//   EMAIL_REPLY_TO  optional Reply-To on every email.
+//
 // Free-tier note: with no verified domain, Resend only delivers to your own
-// account email; sending to anyone else 403s until a domain is verified. Code
-// is complete regardless — it activates the moment the domain is added.
+// account email and the sender must stay "onboarding@resend.dev"; sending to
+// anyone else 403s until a domain is verified. Code is complete regardless.
 
 const KEY = process.env.RESEND_API_KEY;
-const FROM = process.env.DIGEST_FROM ?? "ATLive <onboarding@resend.dev>";
+
+/** Default transactional sender. Branded automatically once EMAIL_FROM is set. */
+export const DEFAULT_FROM = process.env.EMAIL_FROM ?? "ATLive <onboarding@resend.dev>";
+/** Weekly-digest sender; falls back to the transactional sender. */
+export const DIGEST_FROM = process.env.DIGEST_FROM ?? DEFAULT_FROM;
+const REPLY_TO = process.env.EMAIL_REPLY_TO;
 
 export function emailEnabled(): boolean {
   return Boolean(KEY);
@@ -19,12 +30,19 @@ export async function sendEmail(opts: {
   to: string;
   subject: string;
   html: string;
+  from?: string;
 }): Promise<{ ok: boolean; id?: string; error?: string }> {
   if (!KEY) return { ok: false, error: "RESEND_API_KEY not set" };
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: FROM, to: [opts.to], subject: opts.subject, html: opts.html }),
+    body: JSON.stringify({
+      from: opts.from ?? DEFAULT_FROM,
+      to: [opts.to],
+      subject: opts.subject,
+      html: opts.html,
+      ...(REPLY_TO ? { reply_to: REPLY_TO } : {}),
+    }),
   });
   if (!res.ok) return { ok: false, error: `Resend ${res.status}: ${await res.text()}` };
   const j = (await res.json()) as { id?: string };

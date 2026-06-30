@@ -1,5 +1,5 @@
 import { getUpcomingEvents, type UpcomingEvent } from "../lib/events.js";
-import { sendEmail, esc, emailEnabled } from "../lib/email.js";
+import { sendEmail, esc, emailEnabled, DIGEST_FROM } from "../lib/email.js";
 import { getConfirmedSubscribers } from "../lib/subscribers.js";
 import { SITE_URL } from "../lib/site.js";
 
@@ -97,6 +97,7 @@ async function main() {
     const unsubUrl = r.token ? `${SITE_URL}/unsubscribe?token=${r.token}` : null;
     const res = await sendEmail({
       to: r.email,
+      from: DIGEST_FROM,
       subject: `ATLive — ${top.length} live shows in Atlanta this week`,
       html: renderHtml(top, unsubUrl),
     });
