@@ -13,7 +13,9 @@
     "db:apply": "tsx --env-file=.env.local src/ingest/apply-migration.ts",
     "db:subscribers": "tsx --env-file=.env.local src/ingest/apply-subscribers.ts",
     "digest": "tsx --env-file=.env.local src/digest/send.ts",
-    "test": "node --import tsx --test \"src/lib/**/*.test.ts\"",
+    "draftpack": "tsx --env-file=.env.local src/social/draftpack.ts",
+    "social": "tsx --env-file=.env.local src/social/post.ts",
+    "test": "node --import tsx --test \"src/**/*.test.ts\"",
     "eval": "tsx eval/run.ts",
     "typecheck": "tsc --noEmit"
   },

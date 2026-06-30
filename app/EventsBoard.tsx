@@ -41,9 +41,12 @@ function relTime(iso: string): string {
 export default function EventsBoard({
   events,
   lastIngest,
+  landingLinks = [],
 }: {
   events: UpcomingEvent[];
   lastIngest: string | null;
+  /** Neighborhood/genre landing pages, for crawlable internal links. */
+  landingLinks?: { slug: string; label: string; kind: "neighborhood" | "genre" }[];
 }) {
   const reduce = useReducedMotion();
   const [dateFilter, setDateFilter] = useState<DateFilter>("all");
@@ -324,6 +327,31 @@ export default function EventsBoard({
           <span className="chip multi">deduped · evaluated</span>
         </div>
       </section>
+
+      {landingLinks.length > 0 && (
+        <nav className="browse" aria-label="Browse Atlanta live music">
+          <h2 className="browse-h">Browse by neighborhood</h2>
+          <ul className="browse-links">
+            {landingLinks
+              .filter((l) => l.kind === "neighborhood")
+              .map((l) => (
+                <li key={l.slug}>
+                  <Link href={`/${l.slug}`}>{l.label}</Link>
+                </li>
+              ))}
+          </ul>
+          <h2 className="browse-h">Browse by genre</h2>
+          <ul className="browse-links">
+            {landingLinks
+              .filter((l) => l.kind === "genre")
+              .map((l) => (
+                <li key={l.slug}>
+                  <Link href={`/${l.slug}`}>{l.label}</Link>
+                </li>
+              ))}
+          </ul>
+        </nav>
+      )}
 
       <SignupForm />
 

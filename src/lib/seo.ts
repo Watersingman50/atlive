@@ -49,13 +49,16 @@ export function eventJsonLd(e: UpcomingEvent): Record<string, unknown> | null {
   };
 }
 
-/** Wrap the week's events in an ItemList for the homepage. */
-export function itemListJsonLd(events: UpcomingEvent[]): Record<string, unknown> {
+/** Wrap a set of events in an ItemList. `name` defaults to the homepage list. */
+export function itemListJsonLd(
+  events: UpcomingEvent[],
+  name = "Live music in Atlanta this week",
+): Record<string, unknown> {
   const items = events.map(eventJsonLd).filter((x): x is Record<string, unknown> => x !== null);
   return {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    name: "Live music in Atlanta this week",
+    name,
     numberOfItems: items.length,
     itemListElement: items.map((item, i) => ({
       "@type": "ListItem",
