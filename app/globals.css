@@ -1009,6 +1009,13 @@ select:hover {
   padding-top: 28px;
   border-top: 1px solid var(--line);
 }
+/* Top-of-page variant (under the hero): no footer divider, tighter spacing. */
+.browse-top {
+  margin-top: 24px;
+  margin-bottom: 8px;
+  padding-top: 0;
+  border-top: none;
+}
 .browse-h {
   font-family: var(--font-mono);
   font-size: 11px;

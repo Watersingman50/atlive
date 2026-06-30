@@ -168,6 +168,31 @@ export default function EventsBoard({
         )}
       </header>
 
+      {landingLinks.length > 0 && (
+        <nav className="browse browse-top" aria-label="Browse Atlanta live music">
+          <h2 className="browse-h">Browse by neighborhood</h2>
+          <ul className="browse-links">
+            {landingLinks
+              .filter((l) => l.kind === "neighborhood")
+              .map((l) => (
+                <li key={l.slug}>
+                  <Link href={`/${l.slug}`}>{l.label}</Link>
+                </li>
+              ))}
+          </ul>
+          <h2 className="browse-h">Browse by genre</h2>
+          <ul className="browse-links">
+            {landingLinks
+              .filter((l) => l.kind === "genre")
+              .map((l) => (
+                <li key={l.slug}>
+                  <Link href={`/${l.slug}`}>{l.label}</Link>
+                </li>
+              ))}
+          </ul>
+        </nav>
+      )}
+
       <div className="filters">
         <div className="pillrow" role="group" aria-label="Filter by date">
           {(
@@ -327,31 +352,6 @@ export default function EventsBoard({
           <span className="chip multi">deduped · evaluated</span>
         </div>
       </section>
-
-      {landingLinks.length > 0 && (
-        <nav className="browse" aria-label="Browse Atlanta live music">
-          <h2 className="browse-h">Browse by neighborhood</h2>
-          <ul className="browse-links">
-            {landingLinks
-              .filter((l) => l.kind === "neighborhood")
-              .map((l) => (
-                <li key={l.slug}>
-                  <Link href={`/${l.slug}`}>{l.label}</Link>
-                </li>
-              ))}
-          </ul>
-          <h2 className="browse-h">Browse by genre</h2>
-          <ul className="browse-links">
-            {landingLinks
-              .filter((l) => l.kind === "genre")
-              .map((l) => (
-                <li key={l.slug}>
-                  <Link href={`/${l.slug}`}>{l.label}</Link>
-                </li>
-              ))}
-          </ul>
-        </nav>
-      )}
 
       <SignupForm />
 
