@@ -16,3 +16,6 @@ next-env.d.ts
 
 # local tooling / security reports
 .gstack/
+
+# generated weekly social draft packs
+drafts/

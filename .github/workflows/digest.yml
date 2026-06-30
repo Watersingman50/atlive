@@ -31,6 +31,11 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           DIGEST_TO: ${{ secrets.DIGEST_TO }}
+          # Optional: branded sender + correct unsubscribe-link origin once a
+          # Resend domain + custom domain are live. Falls back to defaults.
+          DIGEST_FROM: ${{ secrets.DIGEST_FROM }}
+          EMAIL_REPLY_TO: ${{ secrets.EMAIL_REPLY_TO }}
+          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
         run: npx tsx src/digest/send.ts
 
       - name: Alert on failure

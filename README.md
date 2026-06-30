@@ -73,13 +73,16 @@ ingest + weekly digest).
 ```
 app/                    Next.js site (server page → client EventsBoard)
 app/pipeline/           data-quality dashboard (hand-built SVG/CSS charts)
+app/[slug]/             neighborhood + genre SEO landing pages (static, ISR)
 src/lib/sources/        SourceAdapter implementations (+ pure parsers)
 src/lib/dedup.ts        fuzzy matcher (+ dedup.test.ts)
 src/lib/db.ts           idempotent upsert with exact→fuzzy dedup
 src/lib/neighborhoods.ts venue → Atlanta neighborhood map
+src/lib/landing.ts      landing-page config + match logic (keyword map plugs in here)
 src/lib/extraction-eval.ts  shared eval scorer (CLI + site)
 src/ingest/run.ts       ingest entrypoint (runs in GitHub Actions)
 src/digest/send.ts      weekly email digest (Resend)
+src/social/             weekly auto-post (Bluesky/X) + IG/Reddit draft pack
 supabase/migrations/    schema + pipeline_stats() RPC
 eval/                   extraction-accuracy harness + labeled fixtures
 ```
@@ -93,7 +96,9 @@ eval/                   extraction-accuracy harness + labeled fixtures
 | `npm run ingest:dry` | Fetch + normalize, print sample, no DB writes |
 | `npm run db:apply` | Apply the schema migration |
 | `npm run digest` | Send the weekly email digest |
-| `npm test` | Dedup matcher tests, incl. the false-merge guard |
+| `npm run draftpack` | Build the IG + Reddit draft pack (writes `drafts/`, emails owner) |
+| `npm run social` | Auto-post the weekly lineup to Bluesky + X (no-op without keys) |
+| `npm test` | Pure-logic tests: dedup guard, landing match, social copy, OAuth signing |
 | `npm run eval` | Extraction-accuracy eval (prints the number above) |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run build` | Production build |
@@ -114,7 +119,11 @@ npm run db:apply && npm run ingest && npm run dev
   Secrets: `TM_API_KEY`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`,
   `ANTHROPIC_API_KEY`. The weekly digest (`digest.yml`) adds `RESEND_API_KEY` +
   `DIGEST_TO`.
+- **Growth** runs in `social.yml` (weekly): auto-posts the lineup to Bluesky + X
+  (per-platform keys, optional) and emails the IG/Reddit draft pack for manual
+  posting. Every platform is a no-op until its keys are set.
 - **Site** deploys to Vercel and reads Supabase server-side with ISR (revalidate 1h).
+  Custom domain = set `NEXT_PUBLIC_SITE_URL` (canonicals, sitemap, OG, email links all follow).
 
 ## Status
 
@@ -126,4 +135,7 @@ npm run db:apply && npm run ingest && npm run dev
 - [x] `/pipeline` data-quality dashboard (architecture + real-data charts)
 - [x] Scheduled ingest in CI, with failure alerting
 - [x] Weekly email digest (Resend)
+- [x] SEO: JSON-LD, sitemap, canonical tags + neighborhood/genre landing pages
+- [x] Newsletter: double opt-in signup → confirmed-subscriber digest
+- [x] Growth automation: weekly Bluesky/X auto-post + IG/Reddit draft pack
 - [~] AI blurbs (claude-haiku-4-5) — code complete; activates when API credits are added

@@ -6,6 +6,7 @@ import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import type { UpcomingEvent } from "@/lib/events";
 import { neighborhoodOf } from "@/lib/neighborhoods";
 import BrandMark from "./BrandMark";
+import SignupForm from "./SignupForm";
 
 type DateFilter = "all" | "this" | "next";
 
@@ -40,9 +41,12 @@ function relTime(iso: string): string {
 export default function EventsBoard({
   events,
   lastIngest,
+  landingLinks = [],
 }: {
   events: UpcomingEvent[];
   lastIngest: string | null;
+  /** Neighborhood/genre landing pages, for crawlable internal links. */
+  landingLinks?: { slug: string; label: string; kind: "neighborhood" | "genre" }[];
 }) {
   const reduce = useReducedMotion();
   const [dateFilter, setDateFilter] = useState<DateFilter>("all");
@@ -148,7 +152,7 @@ export default function EventsBoard({
         <h1 className={reduce ? "" : "glitch-in"}>
           Live music in <span className="accent">Atlanta</span>
         </h1>
-        <p className="sub">Every gig in Atlanta this week, in one place — updated automatically.</p>
+        <p className="sub">Every gig in Atlanta this week, in one place - updated automatically.</p>
         <p className="stat" aria-live="polite">
           <span className="livedot" />
           <strong>{filtered.length}</strong>{" "}
@@ -159,7 +163,7 @@ export default function EventsBoard({
         </p>
         {stale && (
           <div className="banner" role="status">
-            Last updated {Math.round(ageHours ?? 0)}h ago — double-check the venue before you head out.
+            Last updated {Math.round(ageHours ?? 0)}h ago - double-check the venue before you head out.
           </div>
         )}
       </header>
@@ -220,7 +224,7 @@ export default function EventsBoard({
         <div className="empty">
           {events.length === 0 ? (
             <>
-              <p>No upcoming events on the board right now. The pipeline ingests every 6 hours — fresh shows land automatically.</p>
+              <p>No upcoming events on the board right now. The pipeline ingests every 6 hours - fresh shows land automatically.</p>
               <a className="empty-act" href="/pipeline">
                 See how the pipeline works →
               </a>
@@ -302,7 +306,7 @@ export default function EventsBoard({
         <p>
           ATLive is an automated discovery board for live music in Atlanta. A scheduled pipeline pulls from the
           Ticketmaster Discovery API plus direct venue feeds and HTML scrapers, normalizes every listing into one
-          schema, and dedupes shows that appear in more than one source so each real event shows up once — with a badge
+          schema, and dedupes shows that appear in more than one source so each real event shows up once - with a badge
           for how many sources confirmed it.
         </p>
         <p>
@@ -323,6 +327,33 @@ export default function EventsBoard({
           <span className="chip multi">deduped · evaluated</span>
         </div>
       </section>
+
+      {landingLinks.length > 0 && (
+        <nav className="browse" aria-label="Browse Atlanta live music">
+          <h2 className="browse-h">Browse by neighborhood</h2>
+          <ul className="browse-links">
+            {landingLinks
+              .filter((l) => l.kind === "neighborhood")
+              .map((l) => (
+                <li key={l.slug}>
+                  <Link href={`/${l.slug}`}>{l.label}</Link>
+                </li>
+              ))}
+          </ul>
+          <h2 className="browse-h">Browse by genre</h2>
+          <ul className="browse-links">
+            {landingLinks
+              .filter((l) => l.kind === "genre")
+              .map((l) => (
+                <li key={l.slug}>
+                  <Link href={`/${l.slug}`}>{l.label}</Link>
+                </li>
+              ))}
+          </ul>
+        </nav>
+      )}
+
+      <SignupForm />
 
       <footer className="foot">
         Built in Atlanta · showtimes from venues + Ticketmaster.
