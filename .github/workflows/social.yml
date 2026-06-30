@@ -1,11 +1,16 @@
 name: social
 
-# Weekly growth automation, Thursdays 16:00 UTC (~noon US Eastern) — ahead of
-# weekend planning. Two independent steps:
-#   1. Auto-post the week's lineup to Bluesky + X (only platforms whose creds
-#      are set; a no-op otherwise — never fails just because keys are missing).
-#   2. Email the IG + Reddit draft pack to the owner for MANUAL posting (those
-#      platforms ban automation).
+# Weekly growth automation. Two independent steps:
+#   1. Auto-post the week's lineup (+ poster image) to Bluesky + X (only
+#      platforms whose creds are set; a no-op otherwise — never fails just
+#      because keys are missing).
+#   2. Email the IG + Reddit draft pack (+ attached poster) to the owner for
+#      MANUAL posting (those platforms ban automation).
+#
+# ⚠️ DISABLED: there is no `schedule:` trigger, so this NEVER runs on its own.
+# Run it by hand from the Actions tab (workflow_dispatch). To turn it on after
+# you've added keys, uncomment the schedule block below (Thursdays 16:00 UTC,
+# ~noon US Eastern — ahead of weekend planning).
 #
 # Optional secrets (each platform/step activates when its keys are present):
 #   Bluesky : BLUESKY_HANDLE, BLUESKY_APP_PASSWORD
@@ -14,8 +19,8 @@ name: social
 #   Shared  : SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, NEXT_PUBLIC_SITE_URL
 
 on:
-  schedule:
-    - cron: "0 16 * * 4"
+  # schedule:
+  #   - cron: "0 16 * * 4"   # uncomment to enable weekly auto-posting
   workflow_dispatch: {}
 
 permissions:

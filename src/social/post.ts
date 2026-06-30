@@ -2,6 +2,7 @@ import { getUpcomingEvents } from "../lib/events.js";
 import { blueskyPost, tweetText } from "./compose.js";
 import { postToBluesky } from "./bluesky.js";
 import { postToX, type PostResult } from "./twitter.js";
+import { posterPng } from "./image.js";
 
 // Weekly auto-poster: builds the week's post and pushes it to every platform
 // whose credentials are set. Platforms without creds are skipped (not failures)
@@ -19,9 +20,19 @@ async function main() {
     return;
   }
 
+  // Render the roundup poster once; attach to both posts. If it fails, post
+  // text-only rather than skip the run.
+  let png: Buffer | null = null;
+  try {
+    png = posterPng(events);
+  } catch (e) {
+    console.warn(`social: poster render failed, posting text-only: ${(e as Error).message}`);
+  }
+  const alt = "ATLive — live music in Atlanta this week";
+
   const results: PostResult[] = [
-    await postToBluesky(blueskyPost(events)),
-    await postToX(tweetText(events)),
+    await postToBluesky(blueskyPost(events), png ? { png, alt } : undefined),
+    await postToX(tweetText(events), png ? { png } : undefined),
   ];
 
   for (const r of results) {

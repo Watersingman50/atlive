@@ -85,15 +85,44 @@ function authHeader(creds: XCreds, method: string, url: string): string {
   );
 }
 
-export async function postToX(text: string): Promise<PostResult> {
+// Upload a PNG via the v1.1 media endpoint (the v2 API has no media upload).
+// Multipart body → only the oauth params are signed, so authHeader is reused
+// as-is. Returns the media_id_string to attach to the tweet.
+async function uploadMedia(creds: XCreds, png: Buffer): Promise<string> {
+  const url = "https://upload.twitter.com/1.1/media/upload.json";
+  const form = new FormData();
+  form.append("media", new Blob([new Uint8Array(png)], { type: "image/png" }), "poster.png");
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { Authorization: authHeader(creds, "POST", url) },
+    body: form,
+  });
+  if (!res.ok) throw new Error(`media/upload ${res.status}: ${await res.text()}`);
+  const j = (await res.json()) as { media_id_string?: string };
+  if (!j.media_id_string) throw new Error("media/upload returned no media_id_string");
+  return j.media_id_string;
+}
+
+export async function postToX(text: string, image?: { png: Buffer }): Promise<PostResult> {
   const creds = xCreds();
   if (!creds) return { platform: "x", ok: false, skipped: true, error: "X creds not set" };
 
+  let mediaIds: string[] | undefined;
+  if (image) {
+    try {
+      mediaIds = [await uploadMedia(creds, image.png)];
+    } catch (e) {
+      // Don't lose the post over an image — fall back to text-only.
+      console.warn(`social: X media upload failed, posting text-only: ${(e as Error).message}`);
+    }
+  }
+
   const url = "https://api.twitter.com/2/tweets";
+  const body = mediaIds ? { text, media: { media_ids: mediaIds } } : { text };
   const res = await fetch(url, {
     method: "POST",
     headers: { Authorization: authHeader(creds, "POST", url), "Content-Type": "application/json" },
-    body: JSON.stringify({ text }),
+    body: JSON.stringify(body),
   });
   if (!res.ok) return { platform: "x", ok: false, error: `X ${res.status}: ${await res.text()}` };
   const j = (await res.json()) as { data?: { id?: string } };

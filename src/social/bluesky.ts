@@ -26,7 +26,7 @@ export function linkFacets(text: string) {
   return facets.length > 0 ? facets : undefined;
 }
 
-export async function postToBluesky(text: string): Promise<PostResult> {
+export async function postToBluesky(text: string, image?: { png: Buffer; alt: string }): Promise<PostResult> {
   const identifier = process.env.BLUESKY_HANDLE;
   const password = process.env.BLUESKY_APP_PASSWORD;
   if (!identifier || !password) return { platform: "bluesky", ok: false, skipped: true, error: "Bluesky creds not set" };
@@ -39,11 +39,25 @@ export async function postToBluesky(text: string): Promise<PostResult> {
   if (!sessionRes.ok) return { platform: "bluesky", ok: false, error: `createSession ${sessionRes.status}: ${await sessionRes.text()}` };
   const session = (await sessionRes.json()) as { accessJwt: string; did: string };
 
+  // Optional image: upload the raw bytes as a blob, then embed the returned ref.
+  let embed: unknown;
+  if (image) {
+    const blobRes = await fetch(`${PDS}/xrpc/com.atproto.repo.uploadBlob`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${session.accessJwt}`, "Content-Type": "image/png" },
+      body: new Uint8Array(image.png),
+    });
+    if (!blobRes.ok) return { platform: "bluesky", ok: false, error: `uploadBlob ${blobRes.status}: ${await blobRes.text()}` };
+    const { blob } = (await blobRes.json()) as { blob: unknown };
+    embed = { $type: "app.bsky.embed.images", images: [{ alt: image.alt, image: blob }] };
+  }
+
   const record = {
     $type: "app.bsky.feed.post",
     text,
     createdAt: new Date().toISOString(),
     ...(linkFacets(text) ? { facets: linkFacets(text) } : {}),
+    ...(embed ? { embed } : {}),
   };
   const postRes = await fetch(`${PDS}/xrpc/com.atproto.repo.createRecord`, {
     method: "POST",
