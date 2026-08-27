@@ -98,7 +98,7 @@ async function main() {
     const res = await sendEmail({
       to: r.email,
       from: DIGEST_FROM,
-      subject: `ATLive — ${top.length} live shows in Atlanta this week`,
+      subject: `ATLive - ${top.length} live shows in Atlanta this week`,
       html: renderHtml(top, unsubUrl),
     });
     if (res.ok) sent++;
