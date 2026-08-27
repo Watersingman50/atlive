@@ -1,54 +1,57 @@
 # ATLive
 
-**Every gig in Atlanta this week, in one place — updated automatically.**
+Every gig in Atlanta this week, in one place, updated automatically.
 
-A live board of live-music shows across Atlanta. Poster-style listings you can
-filter by date, venue, neighborhood, and genre — and it keeps itself current, so
-nobody maintains a list by hand.
+A live board of live-music shows across Atlanta. Poster-style listings you can filter by
+date, venue, neighborhood, and genre, and it keeps itself current, so nobody maintains a
+list by hand.
 
-🔗 **Live:** https://atlive.vercel.app
+Live at https://atlive.vercel.app
 
-![ATLive — live music in Atlanta](docs/home.png)
-
----
+![ATLive, live music in Atlanta](docs/home.png)
 
 ## How it works
 
-The board is the easy part. Underneath is a self-running, multi-source ingestion
-pipeline with provenance-preserving dedup, a measured extraction eval, and a live
-data-quality dashboard at [`/pipeline`](https://atlive.vercel.app/pipeline).
+The board is the easy part. Underneath it is a self-running ingestion pipeline that
+pulls from several sources, dedupes without losing provenance, scores its own extraction
+accuracy against labeled data, and reports all of it on a live data-quality dashboard at
+[`/pipeline`](https://atlive.vercel.app/pipeline).
 
-![ATLive pipeline & data-quality dashboard](docs/pipeline.png)
+![ATLive pipeline and data-quality dashboard](docs/pipeline.png)
 
-**The flow:** four sources → GitHub Actions cron (every 6h) → normalize → dedupe →
-Supabase → Next.js site (ISR). No Vercel cron — ingestion runs in Actions to dodge
-the serverless execution-time limit.
+The flow: four sources, a GitHub Actions cron every 6h, normalize, dedupe, Supabase,
+then the Next.js site via ISR. I don't use Vercel cron. Ingestion runs in Actions
+instead, which dodges the serverless execution-time limit.
 
-### What it demonstrates
+### The parts worth looking at
 
-- **Multi-source ingestion** through one `SourceAdapter` interface — a clean API
-  source (Ticketmaster Discovery), a static-HTML scrape (529), and AEG JSON feeds
-  (Variety Playhouse, Terminal West).
-- **Provenance-preserving dedup.** One canonical `events` row per real show, with
-  every source linked in `event_sources` — so a show seen on Ticketmaster *and*
-  Variety merges into one card that says "seen in 2 sources." Exact-key match with a
-  token-set fuzzy fallback, and a **false-merge guard test** so two different acts on
-  the same night never merge.
-- **A measured eval, not vibes.** The extraction step is scored against hand-labeled
-  ground truth — see below — and the `/pipeline` page charts the same numbers live.
-- **Runs itself.** GitHub Actions ingests every 6h; the site serves cached data via
-  ISR and never goes blank (last-good render + freshness banner); failed runs open an
-  issue. A weekly Resend email digest goes out Monday mornings.
-- **AI, done honestly.** A `claude-haiku-4-5` blurb per event, generated once and
-  stored, with a graceful skip on failure — and the eval targets the *extractable*
-  step (real ground truth), not blurb taste.
+All four sources go through one `SourceAdapter` interface even though they look nothing
+alike: Ticketmaster Discovery is a clean API, 529 is a static-HTML scrape, and Variety
+Playhouse and Terminal West come from AEG JSON feeds.
+
+Dedup preserves provenance. There is one canonical `events` row per real show, with
+every source linked in `event_sources`, so a show seen on Ticketmaster *and* Variety
+merges into one card that says "seen in 2 sources." Matching is exact-key first with a
+token-set fuzzy fallback, and a false-merge guard test makes sure two different acts on
+the same night never collapse into one.
+
+The extraction step is measured, not eyeballed. It's scored against hand-labeled ground
+truth (see below), and the `/pipeline` page charts the same numbers live.
+
+The whole thing runs itself. Actions ingests every 6h, the site serves cached data via
+ISR and never goes blank (last-good render plus a freshness banner), and a failed run
+opens an issue. A weekly email digest goes out Monday mornings through Resend.
+
+Each event gets a `claude-haiku-4-5` blurb, generated once and stored, with a graceful
+skip on failure. I pointed the eval at the extraction step, where there is real ground
+truth, rather than at blurb quality, where there isn't.
 
 ### Eval results
 
-`npm run eval` scores artist/date/venue extraction from captured raw fixtures against
-`eval/labels.ts` (hand-labeled ground truth), and writes `eval/results.json` (which
-the `/pipeline` page imports — the number on the site is the number the harness
-computes):
+`npm run eval` scores artist, date, and venue extraction from captured raw fixtures
+against the hand-labeled ground truth in `eval/labels.ts`, then writes
+`eval/results.json`. The `/pipeline` page imports that file, so the number on the site is
+the number the harness computed.
 
 ```
 Extraction accuracy: 29/30 fields correct (96.7%) across 10 labeled events
@@ -57,9 +60,9 @@ Misses:
   - variety:1458556  artist: expected "feeble little horse", got "feeble little horse: bitknot tour"
 ```
 
-The one miss is real and kept on purpose: the parser strips `" - "` tour suffixes but
-not `": "` ones. An eval that always reads 100% is usually rigged — this one surfaces
-actual extraction edge cases and guards against regressions.
+I kept that one miss on purpose. The parser strips `" - "` tour suffixes but not `": "`
+ones, which is a real edge case. An eval that always reads 100% is usually rigged, and
+this one catches regressions.
 
 ### Tech stack
 
@@ -115,15 +118,17 @@ npm run db:apply && npm run ingest && npm run dev
 
 ### Deployment
 
-- **Ingestion** runs in GitHub Actions (`.github/workflows/ingest.yml`) on a 6h cron.
-  Secrets: `TM_API_KEY`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`,
-  `ANTHROPIC_API_KEY`. The weekly digest (`digest.yml`) adds `RESEND_API_KEY` +
-  `DIGEST_TO`.
-- **Growth** runs in `social.yml` (weekly): auto-posts the lineup to Bluesky + X
-  (per-platform keys, optional) and emails the IG/Reddit draft pack for manual
-  posting. Every platform is a no-op until its keys are set.
-- **Site** deploys to Vercel and reads Supabase server-side with ISR (revalidate 1h).
-  Custom domain = set `NEXT_PUBLIC_SITE_URL` (canonicals, sitemap, OG, email links all follow).
+Ingestion runs in GitHub Actions (`.github/workflows/ingest.yml`) on a 6h cron. It needs
+`TM_API_KEY`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `ANTHROPIC_API_KEY` as
+secrets. The weekly digest (`digest.yml`) adds `RESEND_API_KEY` and `DIGEST_TO`.
+
+Growth runs weekly in `social.yml`. It auto-posts the lineup to Bluesky and X
+(per-platform keys, optional) and emails the IG/Reddit draft pack for manual posting.
+Every platform is a no-op until its keys are set.
+
+The site deploys to Vercel and reads Supabase server-side with ISR (revalidate 1h). For
+a custom domain, set `NEXT_PUBLIC_SITE_URL`, and canonicals, sitemap, OG, and email
+links all follow.
 
 ## Status
 
@@ -138,4 +143,4 @@ npm run db:apply && npm run ingest && npm run dev
 - [x] SEO: JSON-LD, sitemap, canonical tags + neighborhood/genre landing pages
 - [x] Newsletter: double opt-in signup → confirmed-subscriber digest
 - [x] Growth automation: weekly Bluesky/X auto-post + IG/Reddit draft pack
-- [~] AI blurbs (claude-haiku-4-5) — code complete; activates when API credits are added
+- [~] AI blurbs (claude-haiku-4-5): code complete, activates when API credits are added
